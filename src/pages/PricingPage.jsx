@@ -13,6 +13,9 @@ import {
   ArrowRight,
   LayoutDashboard,
   X,
+  Mail,
+  Code2,
+  Github,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PRO_PRICE_MONTHLY, PRO_PRICE_ANNUAL } from '@/hooks/useProfile'
@@ -371,6 +374,57 @@ export function PricingPage() {
           </div>
         </div>
       </main>
+
+      {/* ── Footer Developer ── */}
+      <footer className="relative border-t border-border bg-background/60 backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+
+            {/* Brand */}
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-violet-400 flex items-center justify-center shadow-lg shadow-primary/20">
+                <span className="text-sm font-bold text-white">T</span>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-foreground">Tugasku</p>
+                <p className="text-xs text-muted-foreground">Manajemen Tugas Modern</p>
+              </div>
+            </div>
+
+            {/* Developer identity */}
+            <div className="flex flex-col items-center gap-1.5 text-center">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Code2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span>Dibuat dengan ❤️ oleh</span>
+                <span className="font-semibold text-foreground">Ido Refael Siregar</span>
+              </div>
+              <a
+                href="mailto:Idosiregar2006@gmail.com"
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Mail className="h-3 w-3" />
+                Idosiregar2006@gmail.com
+              </a>
+            </div>
+
+            {/* Links & copyright */}
+            <div className="flex flex-col items-end gap-1.5 text-right">
+              <a
+                href="https://github.com/idosiregar24/tugasku-app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Github className="h-3.5 w-3.5" />
+                idosiregar24/tugasku-app
+              </a>
+              <p className="text-xs text-muted-foreground">
+                © {new Date().getFullYear()} Tugasku. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

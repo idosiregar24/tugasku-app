@@ -26,6 +26,7 @@ import {
   Crown,
   Sparkles,
   Clock,
+  Code2,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
@@ -259,6 +260,25 @@ export function DashboardPage() {
         onSignOut={signOut}
         onUpgrade={() => { setProfileOpen(false); setUpgradeOpen(true) }}
       />
+
+      {/* ── Developer Footer ── */}
+      <footer className="border-t border-border/40 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+          <p className="text-xs text-muted-foreground/50">
+            © {new Date().getFullYear()} Tugasku
+          </p>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/50">
+            <Code2 className="h-3 w-3" />
+            <span>by</span>
+            <a
+              href="mailto:Idosiregar2006@gmail.com"
+              className="font-medium hover:text-primary transition-colors"
+            >
+              Ido Refael Siregar
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

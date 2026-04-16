@@ -1,14 +1,43 @@
 <!doctype html>
-<html lang="id" class="dark">
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- SEO -->
     <title>Tugasku – Manajemen Tugas Produktif</title>
-    <meta name="description" content="Tugasku adalah aplikasi manajemen tugas SaaS modern dengan Kanban board. Kelola tugas harianmu dengan mudah dan efisien." />
+    <meta name="description" content="Tugasku adalah aplikasi manajemen tugas SaaS modern dengan Kanban board drag-and-drop. Kelola tugas harianmu dengan mudah, atur prioritas, dan tingkatkan produktivitasmu." />
+    <meta name="author" content="Ido Refael Siregar" />
+    <meta name="developer" content="Ido Refael Siregar — Idosiregar2006@gmail.com" />
+    <meta name="keywords" content="manajemen tugas, kanban board, todo list, produktivitas, tugasku, task management" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Tugasku – Manajemen Tugas Produktif" />
+    <meta property="og:description" content="Kelola tugas harianmu dengan Kanban board modern. Gratis untuk memulai." />
+    <meta property="og:site_name" content="Tugasku" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Tugasku – Manajemen Tugas Produktif" />
+    <meta name="twitter:description" content="Kelola tugas harianmu dengan Kanban board modern. Gratis untuk memulai." />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Apply saved theme before React loads to prevent flash -->
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('tugasku-theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (theme === 'light' || (!theme && !prefersDark)) {
+            document.documentElement.classList.add('light');
+          }
+        } catch(e) {}
+      })();
+    </script>
   </body>
 </html>
