@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom'
-import { LogOut, LayoutDashboard, Zap, Crown, Sparkles } from 'lucide-react'
+import { LogOut, LayoutDashboard, Zap, Crown, Sparkles, Sun, Moon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useTheme } from '@/hooks/useTheme'
 import { cn } from '@/lib/utils'
 
 /**
  * Sticky top navigation bar dengan info user, plan indicator, dan avatar profil
  */
 export function Navbar({ user, onSignOut, todoCount, freeLimit, isPro, onUpgrade, onOpenProfile }) {
+  const { isDark, toggleTheme } = useTheme()
   const percentage = Math.min((todoCount / freeLimit) * 100, 100)
   const isNearLimit = percentage >= 80
   const isAtLimit   = percentage >= 100
@@ -76,8 +78,25 @@ export function Navbar({ user, onSignOut, todoCount, freeLimit, isPro, onUpgrade
             )}
           </div>
 
-          {/* ── Right: Avatar + Logout ── */}
+          {/* ── Right: Theme toggle + Avatar + Logout ── */}
           <div className="flex items-center gap-2 shrink-0">
+            {/* Theme toggle */}
+            <button
+              id="theme-toggle-btn"
+              onClick={toggleTheme}
+              title={isDark ? 'Ganti ke mode terang' : 'Ganti ke mode gelap'}
+              className={cn(
+                'w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200',
+                'border border-border hover:border-primary/40',
+                'bg-secondary hover:bg-secondary/80 active:scale-95',
+                'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {isDark
+                ? <Sun className="h-4 w-4 text-amber-400" />
+                : <Moon className="h-4 w-4 text-primary" />
+              }
+            </button>
             {/* Avatar — opens ProfileModal */}
             <button
               id="open-profile-btn"

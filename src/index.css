@@ -5,6 +5,7 @@
 @tailwind utilities;
 
 @layer base {
+  /* ── Dark theme (default) ── */
   :root {
     --background: 250 25% 4%;
     --foreground: 210 20% 97%;
@@ -28,9 +29,37 @@
     --radius: 0.75rem;
   }
 
+  /* ── Light theme ── */
+  .light {
+    --background: 0 0% 98%;
+    --foreground: 240 10% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 8%;
+    --primary: 263 70% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 94%;
+    --secondary-foreground: 240 10% 8%;
+    --muted: 240 5% 94%;
+    --muted-foreground: 240 5% 45%;
+    --accent: 263 30% 92%;
+    --accent-foreground: 240 10% 8%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 6% 88%;
+    --input: 240 5% 94%;
+    --ring: 263 70% 52%;
+    --radius: 0.75rem;
+  }
+
   * {
     box-sizing: border-box;
     border-color: hsl(var(--border));
+  }
+
+  html {
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   body {
@@ -39,6 +68,7 @@
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   ::-webkit-scrollbar {
@@ -55,4 +85,14 @@
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground));
   }
+}
+
+/* Smooth transition for all themeable elements */
+*, *::before, *::after {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease;
+}
+
+/* Disable transition on first load */
+.no-transition * {
+  transition: none !important;
 }

@@ -5,8 +5,11 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { PricingPage } from '@/pages/PricingPage'
 import { AdminPage } from '@/pages/AdminPage'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
+import { useTheme } from '@/hooks/useTheme'
 
 export default function App() {
+  // Initialize theme at root — applies .light class to <html> if needed
+  useTheme()
   return (
     <BrowserRouter>
       <Routes>
