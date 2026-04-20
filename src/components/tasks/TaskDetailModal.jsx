@@ -176,7 +176,11 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
   const handleToggleStatus = async () => {
     setTogglingStatus(true)
     try {
-      const newStatus = task.status === 'todo' ? 'done' : 'todo'
+      let newStatus = 'todo'
+      if (task.status === 'todo') newStatus = 'finished'
+      else if (task.status === 'finished') newStatus = 'done'
+      else newStatus = 'todo'
+
       await onUpdate(task.id, { status: newStatus })
       onClose()
     } finally {
@@ -212,13 +216,15 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
               <button
                 onClick={handleToggleStatus}
                 disabled={togglingStatus}
-                title={task.status === 'todo' ? 'Tandai selesai' : 'Tandai belum selesai'}
+                title="Ganti status tugas"
                 className="mt-0.5 shrink-0 text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
               >
                 {togglingStatus ? (
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
                 ) : task.status === 'done' ? (
                   <CheckCircle2 className="h-5 w-5 text-green-400" />
+                ) : task.status === 'finished' ? (
+                  <Clock className="h-5 w-5 text-amber-400" />
                 ) : (
                   <Circle className="h-5 w-5" />
                 )}
@@ -234,10 +240,16 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
                     className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
                       task.status === 'done'
                         ? 'bg-green-400/15 text-green-400 border-green-400/30'
+                        : task.status === 'finished'
+                        ? 'bg-amber-400/15 text-amber-400 border-amber-400/30'
                         : 'bg-primary/15 text-primary border-primary/30'
                     }`}
                   >
-                    {task.status === 'done' ? '✅ Selesai' : '⏳ Dikerjakan'}
+                    {task.status === 'done'
+                      ? '✅ Selesai (Submit)'
+                      : task.status === 'finished'
+                      ? '⏳ Selesai (Belum Submit)'
+                      : '📝 Dikerjakan'}
                   </span>
                   {/* Priority badge */}
                   <span
@@ -391,12 +403,17 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
               ) : task.status === 'done' ? (
                 <>
                   <Circle className="h-3.5 w-3.5" />
-                  Buka Lagi
+                  Buka Lagi (Todo)
+                </>
+              ) : task.status === 'finished' ? (
+                <>
+                  <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />
+                  Tandai Submit (Done)
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />
-                  Tandai Selesai
+                  <Clock className="h-3.5 w-3.5 text-amber-400" />
+                  Selesai (Belum Submit)
                 </>
               )}
             </Button>

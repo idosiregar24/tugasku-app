@@ -129,6 +129,13 @@ export function TaskCard({ task, onDelete, onOpenDetail, isOverlay = false }) {
             {task.title}
           </p>
           <div className="mt-2.5 flex items-center gap-2 flex-wrap">
+            {/* Status badge if finished */}
+            {task.status === 'finished' && (
+              <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md bg-amber-400/15 text-amber-400 border border-amber-400/20 font-bold uppercase tracking-wider">
+                <Clock className="w-2.5 h-2.5" />
+                Belum Submit
+              </span>
+            )}
             {/* Priority badge */}
             <span
               className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium ${config.badge}`}

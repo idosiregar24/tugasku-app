@@ -3,30 +3,40 @@ import { TaskCard } from './TaskCard'
 
 /**
  * A droppable Kanban column
- * @param {{ id: 'todo' | 'done', title: string, tasks: import('@/types').Task[], onDelete: Function, onOpenDetail: Function, emptyMessage: string }} props
+ * @param {{ id: 'todo' | 'finished' | 'done', title: string, tasks: import('@/types').Task[], onDelete: Function, onOpenDetail: Function, emptyMessage: string }} props
  */
 export function TaskColumn({ id, title, tasks, onDelete, onOpenDetail, emptyMessage }) {
   const { setNodeRef, isOver } = useDroppable({ id })
 
   const isTodo = id === 'todo'
+  const isFinished = id === 'finished'
+
+  const getStatusColor = () => {
+    if (isTodo) return 'bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.6)]'
+    if (isFinished) return 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]'
+    return 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]'
+  }
+
+  const getBadgeStyle = () => {
+    if (isTodo) return 'bg-primary/10 text-primary border-primary/20'
+    if (isFinished) return 'bg-amber-400/10 text-amber-400 border-amber-400/20'
+    return 'bg-green-400/10 text-green-400 border-green-400/20'
+  }
+
+  const getOverStyle = () => {
+    if (!isOver) return 'border-border/40 bg-secondary/10'
+    if (isTodo) return 'border-primary/70 bg-primary/5 shadow-inner shadow-primary/5'
+    if (isFinished) return 'border-amber-400/70 bg-amber-400/5 shadow-inner shadow-amber-400/5'
+    return 'border-green-400/70 bg-green-400/5 shadow-inner shadow-green-400/5'
+  }
 
   return (
     <div className="flex flex-col min-h-0">
       {/* Column header */}
       <div className="flex items-center gap-2.5 mb-4 px-1">
-        <div
-          className={`w-2.5 h-2.5 rounded-full ${
-            isTodo ? 'bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.6)]' : 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]'
-          }`}
-        />
+        <div className={`w-2.5 h-2.5 rounded-full ${getStatusColor()}`} />
         <h2 className="font-semibold text-foreground">{title}</h2>
-        <span
-          className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${
-            isTodo
-              ? 'bg-primary/10 text-primary border-primary/20'
-              : 'bg-green-400/10 text-green-400 border-green-400/20'
-          }`}
-        >
+        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${getBadgeStyle()}`}>
           {tasks.length}
         </span>
       </div>
@@ -36,11 +46,7 @@ export function TaskColumn({ id, title, tasks, onDelete, onOpenDetail, emptyMess
         ref={setNodeRef}
         className={[
           'flex-1 min-h-[420px] rounded-2xl border-2 border-dashed p-3 transition-all duration-200',
-          isOver
-            ? isTodo
-              ? 'border-primary/70 bg-primary/5 shadow-inner shadow-primary/5'
-              : 'border-green-400/70 bg-green-400/5 shadow-inner shadow-green-400/5'
-            : 'border-border/40 bg-secondary/10',
+          getOverStyle(),
         ].join(' ')}
       >
         {tasks.length === 0 ? (
@@ -49,7 +55,9 @@ export function TaskColumn({ id, title, tasks, onDelete, onOpenDetail, emptyMess
               isOver ? 'opacity-100' : 'opacity-30'
             }`}
           >
-            <span className="text-4xl">{isOver ? '📥' : isTodo ? '📋' : '✅'}</span>
+            <span className="text-4xl">
+              {isOver ? '📥' : isTodo ? '📋' : isFinished ? '⏳' : '✅'}
+            </span>
             <p className="text-xs text-muted-foreground text-center max-w-[160px]">
               {emptyMessage}
             </p>

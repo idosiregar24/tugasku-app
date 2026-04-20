@@ -95,12 +95,13 @@ export function useTasks(user, isPro = false) {
   }, [tasks, loading])
 
   const todoTasks = tasks.filter((t) => t.status === 'todo')
+  const finishedTasks = tasks.filter((t) => t.status === 'finished')
   const doneTasks = tasks.filter((t) => t.status === 'done')
   const isLimitReached = todoTasks.length >= effectiveLimit
 
   // Notification logic: find overdue or urgent tasks
   const notifications = tasks.filter((t) => {
-    if (t.status === 'done') return false
+    if (t.status === 'done' || t.status === 'finished') return false
     const deadline = parseISO(t.deadline)
     const now = new Date()
     now.setHours(0, 0, 0, 0)
@@ -119,10 +120,12 @@ export function useTasks(user, isPro = false) {
 
   // Update task with optimistic UI
   const handleUpdateTask = async (id, updates) => {
-    // If marking as done, add completed_at timestamp
+    // If marking as finished or done, add completed_at timestamp
     const finalUpdates = { ...updates }
-    if (updates.status === 'done') {
-      finalUpdates.completed_at = new Date().toISOString()
+    if (updates.status === 'done' || updates.status === 'finished') {
+      if (!tasks.find(t => t.id === id)?.completed_at) {
+        finalUpdates.completed_at = new Date().toISOString()
+      }
     } else if (updates.status === 'todo') {
       finalUpdates.completed_at = null // Reset if re-opened
     }
@@ -154,6 +157,7 @@ export function useTasks(user, isPro = false) {
   return {
     tasks,
     todoTasks,
+    finishedTasks,
     doneTasks,
     loading,
     error,

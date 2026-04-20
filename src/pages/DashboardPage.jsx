@@ -59,6 +59,7 @@ export function DashboardPage() {
 
   const {
     todoTasks,
+    finishedTasks,
     doneTasks,
     loading,
     error,
@@ -79,8 +80,9 @@ export function DashboardPage() {
   const handleOpenDetail  = (task) => setSelectedTask(task)
   const handleCloseDetail = ()     => setSelectedTask(null)
 
-  const totalTasks      = todoTasks.length + doneTasks.length
-  const completionRate  = totalTasks > 0 ? Math.round((doneTasks.length / totalTasks) * 100) : 0
+  const totalTasks      = todoTasks.length + finishedTasks.length + doneTasks.length
+  const finishedTotal   = finishedTasks.length + doneTasks.length
+  const completionRate  = totalTasks > 0 ? Math.round((finishedTotal / totalTasks) * 100) : 0
 
   if (loading || profileLoading) {
     return (
@@ -200,9 +202,10 @@ export function DashboardPage() {
         )}
 
         {/* Stats cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
           <StatCard label="Total Tugas"       value={totalTasks}        icon={TrendingUp}  colorClass="bg-primary/15 text-primary" />
           <StatCard label="Perlu Dikerjakan"  value={todoTasks.length}  icon={ListTodo}    colorClass="bg-violet-400/15 text-violet-400" />
+          <StatCard label="Belum Submit"      value={finishedTasks.length} icon={Clock}    colorClass="bg-amber-400/15 text-amber-400" />
           <StatCard label="Selesai"           value={doneTasks.length}  icon={CheckCircle2} colorClass="bg-green-400/15 text-green-400" />
         </div>
 
@@ -227,6 +230,7 @@ export function DashboardPage() {
         {/* Kanban Board */}
         <KanbanBoard
           todoTasks={todoTasks}
+          finishedTasks={finishedTasks}
           doneTasks={doneTasks}
           onUpdateTask={updateTask}
           onDeleteTask={deleteTask}

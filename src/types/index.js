@@ -1,6 +1,6 @@
 /**
  * @typedef {'Low' | 'Medium' | 'High'} Priority
- * @typedef {'todo' | 'done'} TaskStatus
+ * @typedef {'todo' | 'finished' | 'done'} TaskStatus
  *
  * @typedef {Object} Task
  * @property {string} id
@@ -11,7 +11,7 @@
  * @property {string} [notes]
  * @property {TaskStatus} status
  * @property {string} created_at
- * @property {string} [completed_at] - ISO date when task was marked as done
+ * @property {string} [completed_at] - ISO date when task was marked as done or finished
  */
 
 export const PRIORITIES = /** @type {Priority[]} */ (['Low', 'Medium', 'High'])

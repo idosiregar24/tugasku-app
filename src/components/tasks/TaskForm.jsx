@@ -17,13 +17,22 @@ const priorityEmoji = { Low: '🔵', Medium: '🟡', High: '🔴' }
 const priorityDesc = { Low: 'Tidak mendesak', Medium: 'Perlu diperhatikan', High: 'Sangat mendesak' }
 
 /**
- * Form untuk menambah tugas baru, dengan logika SaaS limit
+ * Form untuk menambah tugas baru, dengan logika SaaS limit dan multi-step wizard
  */
 export function TaskForm({ onAdd, isLimitReached, todoCount, freeLimit, onClose }) {
   const today = new Date().toISOString().split('T')[0]
+  const [step, setStep] = useState(1)
   const [form, setForm] = useState({ title: '', deadline: today, priority: 'Medium', notes: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const nextStep = () => {
+    if (step === 1 && !form.title.trim()) return
+    if (step === 2 && !form.deadline) return
+    setStep(step + 1)
+  }
+
+  const prevStep = () => setStep(step - 1)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -96,105 +105,165 @@ export function TaskForm({ onAdd, isLimitReached, todoCount, freeLimit, onClose 
     )
   }
 
-  // === Normal add task form ===
+  // === Multi-step wizard form ===
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="task-title">
-          Nama Tugas <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="task-title"
-          placeholder="Misal: Kerjakan laporan mingguan"
-          value={form.title}
-          onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-          required
-          maxLength={120}
-          autoFocus
-        />
-        <p className="text-xs text-muted-foreground text-right">
-          {form.title.length}/120
-        </p>
+    <div className="space-y-6 py-2">
+      {/* Step Indicators */}
+      <div className="flex items-center justify-center gap-2 mb-2">
+        {[1, 2, 3].map((s) => (
+          <div
+            key={s}
+            className={`h-1.5 rounded-full transition-all duration-300 ${
+              step === s
+                ? 'w-8 bg-primary'
+                : step > s
+                ? 'w-4 bg-primary/40'
+                : 'w-4 bg-secondary'
+            }`}
+          />
+        ))}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="task-deadline">
-          Tanggal Deadline <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="task-deadline"
-          type="date"
-          value={form.deadline}
-          onChange={(e) => setForm((p) => ({ ...p, deadline: e.target.value }))}
-          required
-        />
-      </div>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {step === 1 && (
+          <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="space-y-1">
+              <h3 className="text-sm font-semibold text-foreground">Langkah 1: Apa yang ingin kamu kerjakan?</h3>
+              <p className="text-xs text-muted-foreground">Berikan nama yang jelas untuk tugasmu.</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="task-title">Nama Tugas <span className="text-destructive">*</span></Label>
+              <Input
+                id="task-title"
+                placeholder="Misal: Kerjakan laporan mingguan"
+                value={form.title}
+                onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+                required
+                maxLength={120}
+                autoFocus
+              />
+              <p className="text-[10px] text-muted-foreground text-right uppercase tracking-wider font-medium">
+                {form.title.length}/120
+              </p>
+            </div>
+          </div>
+        )}
 
-      <div className="space-y-2">
-        <Label htmlFor="task-priority">Prioritas</Label>
-        <Select
-          value={form.priority}
-          onValueChange={(val) => setForm((p) => ({ ...p, priority: val }))}
-        >
-          <SelectTrigger id="task-priority">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {PRIORITIES.map((p) => (
-              <SelectItem key={p} value={p}>
-                <span className="flex items-center gap-2">
-                  <span>{priorityEmoji[p]}</span>
-                  <span>{p}</span>
-                  <span className="text-muted-foreground text-xs">— {priorityDesc[p]}</span>
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+        {step === 2 && (
+          <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="space-y-1">
+              <h3 className="text-sm font-semibold text-foreground">Langkah 2: Kapan deadline-nya?</h3>
+              <p className="text-xs text-muted-foreground">Tentukan batas waktu penyelesaian tugas ini.</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="task-deadline">Tanggal Deadline <span className="text-destructive">*</span></Label>
+              <Input
+                id="task-deadline"
+                type="date"
+                value={form.deadline}
+                onChange={(e) => setForm((p) => ({ ...p, deadline: e.target.value }))}
+                required
+              />
+            </div>
+          </div>
+        )}
 
-      <div className="space-y-2">
-        <Label htmlFor="task-notes">Catatan (Opsional)</Label>
-        <Textarea
-          id="task-notes"
-          placeholder="Tambahkan detail atau instruksi tugas..."
-          value={form.notes}
-          onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
-          maxLength={500}
-          className="resize-none"
-        />
-        <p className="text-xs text-muted-foreground text-right">
-          {form.notes.length}/500
-        </p>
-      </div>
+        {step === 3 && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="space-y-1">
+              <h3 className="text-sm font-semibold text-foreground">Langkah 3: Detail Kepentingan</h3>
+              <p className="text-xs text-muted-foreground">Atur prioritas dan tambahkan catatan jika ada.</p>
+            </div>
 
-      {error && (
-        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
-          {error}
-        </div>
-      )}
+            <div className="space-y-2">
+              <Label htmlFor="task-priority">Prioritas</Label>
+              <Select
+                value={form.priority}
+                onValueChange={(val) => setForm((p) => ({ ...p, priority: val }))}
+              >
+                <SelectTrigger id="task-priority">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRIORITIES.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      <span className="flex items-center gap-2">
+                        <span>{priorityEmoji[p]}</span>
+                        <span>{p}</span>
+                        <span className="text-muted-foreground text-xs">— {priorityDesc[p]}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-      {/* Free plan indicator */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-        <span>Sisa slot tugas aktif:</span>
-        <span className={`font-semibold ${todoCount >= freeLimit - 3 ? 'text-amber-400' : 'text-foreground'}`}>
-          {freeLimit - todoCount} dari {freeLimit}
-        </span>
-      </div>
+            <div className="space-y-2">
+              <Label htmlFor="task-notes">Catatan / Deskripsi (Opsional)</Label>
+              <Textarea
+                id="task-notes"
+                placeholder="Tambahkan detail atau instruksi tugas..."
+                value={form.notes}
+                onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
+                maxLength={500}
+                className="resize-none min-h-[100px]"
+              />
+              <p className="text-[10px] text-muted-foreground text-right uppercase tracking-wider font-medium">
+                {form.notes.length}/500
+              </p>
+            </div>
+          </div>
+        )}
 
-      <div className="flex gap-3 pt-1">
-        <Button type="button" variant="outline" className="flex-1" onClick={onClose}>
-          Batal
-        </Button>
-        <Button id="task-submit-btn" type="submit" className="flex-1" disabled={loading}>
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+        {error && (
+          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+            {error}
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex gap-3 pt-2">
+          {step > 1 ? (
+            <Button type="button" variant="outline" className="flex-1" onClick={prevStep}>
+              Kembali
+            </Button>
           ) : (
-            <Plus className="h-4 w-4 mr-2" />
+            <Button type="button" variant="ghost" className="flex-1 text-muted-foreground" onClick={onClose}>
+              Batal
+            </Button>
           )}
-          {loading ? 'Menyimpan...' : 'Tambah Tugas'}
-        </Button>
-      </div>
-    </form>
+
+          {step < 3 ? (
+            <Button
+              type="button"
+              className="flex-1"
+              onClick={nextStep}
+              disabled={step === 1 && !form.title.trim()}
+            >
+              Lanjut
+            </Button>
+          ) : (
+            <Button id="task-submit-btn" type="submit" className="flex-1" disabled={loading}>
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Plus className="h-4 w-4 mr-2" />
+              )}
+              {loading ? 'Menyimpan...' : 'Tambah Tugas'}
+            </Button>
+          )}
+        </div>
+
+        {/* Footer info */}
+        {step === 1 && (
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-border/50">
+            <span>Sisa slot tugas aktif:</span>
+            <span className={`font-semibold ${todoCount >= freeLimit - 3 ? 'text-amber-400' : 'text-foreground'}`}>
+              {freeLimit - todoCount} dari {freeLimit}
+            </span>
+          </div>
+        )}
+      </form>
+    </div>
   )
 }

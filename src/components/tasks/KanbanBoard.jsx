@@ -12,10 +12,10 @@ import { TaskColumn } from './TaskColumn'
 import { TaskCard } from './TaskCard'
 
 /**
- * Kanban board with DnD between Todo and Done columns
- * @param {{ todoTasks: Task[], doneTasks: Task[], onUpdateTask: Function, onDeleteTask: Function, onOpenDetail: Function }} props
+ * Kanban board with DnD between Todo, Finished (unsubmitted), and Done columns
+ * @param {{ todoTasks: Task[], finishedTasks: Task[], doneTasks: Task[], onUpdateTask: Function, onDeleteTask: Function, onOpenDetail: Function }} props
  */
-export function KanbanBoard({ todoTasks, doneTasks, onUpdateTask, onDeleteTask, onOpenDetail }) {
+export function KanbanBoard({ todoTasks, finishedTasks, doneTasks, onUpdateTask, onDeleteTask, onOpenDetail }) {
   const [activeTask, setActiveTask] = useState(null)
 
   // Require 8px movement before drag starts (prevents accidental drags)
@@ -33,7 +33,7 @@ export function KanbanBoard({ todoTasks, doneTasks, onUpdateTask, onDeleteTask, 
     if (!over) return
 
     const task = active.data.current?.task
-    const newStatus = over.id // 'todo' or 'done'
+    const newStatus = over.id // 'todo', 'finished', or 'done'
 
     // Only update if dropped in a DIFFERENT column
     if (task && task.status !== newStatus) {
@@ -53,7 +53,7 @@ export function KanbanBoard({ todoTasks, doneTasks, onUpdateTask, onDeleteTask, 
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
         <TaskColumn
           id="todo"
           title="Perlu Dikerjakan"
@@ -63,12 +63,20 @@ export function KanbanBoard({ todoTasks, doneTasks, onUpdateTask, onDeleteTask, 
           emptyMessage="Belum ada tugas. Klik tombol + untuk menambah!"
         />
         <TaskColumn
+          id="finished"
+          title="Belum Submit"
+          tasks={finishedTasks}
+          onDelete={onDeleteTask}
+          onOpenDetail={onOpenDetail}
+          emptyMessage="Tugas yang sudah selesai tapi belum dikumpulkan."
+        />
+        <TaskColumn
           id="done"
           title="Selesai"
           tasks={doneTasks}
           onDelete={onDeleteTask}
           onOpenDetail={onOpenDetail}
-          emptyMessage="Drag tugas ke sini setelah selesai dikerjakan!"
+          emptyMessage="Drag tugas ke sini jika sudah benar-benar selesai!"
         />
       </div>
 
