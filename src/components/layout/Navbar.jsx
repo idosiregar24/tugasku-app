@@ -79,22 +79,22 @@ export function Navbar({ user, onSignOut, todoCount, freeLimit, isPro, onUpgrade
           </div>
 
           {/* ── Right: Theme toggle + Avatar + Logout ── */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Notification Bell */}
             <div className="relative">
               <button
                 className={cn(
-                  'w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200',
+                  'w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-all duration-200',
                   'border border-border hover:border-primary/40',
                   'bg-secondary hover:bg-secondary/80 active:scale-95',
                   'text-muted-foreground hover:text-foreground'
                 )}
                 title={notifications.length > 0 ? `${notifications.length} tugas terlambat!` : 'Tidak ada notifikasi'}
               >
-                <Bell className={cn('h-4 w-4', notifications.length > 0 ? 'text-red-400 animate-pulse' : '')} />
+                <Bell className={cn('h-3.5 w-3.5 sm:h-4 sm:w-4', notifications.length > 0 ? 'text-red-400 animate-pulse' : '')} />
               </button>
               {notifications.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-background">
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-red-500 text-white text-[9px] sm:text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-background">
                   {notifications.length}
                 </span>
               )}
@@ -106,15 +106,15 @@ export function Navbar({ user, onSignOut, todoCount, freeLimit, isPro, onUpgrade
               onClick={toggleTheme}
               title={isDark ? 'Ganti ke mode terang' : 'Ganti ke mode gelap'}
               className={cn(
-                'w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200',
+                'w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-all duration-200',
                 'border border-border hover:border-primary/40',
                 'bg-secondary hover:bg-secondary/80 active:scale-95',
                 'text-muted-foreground hover:text-foreground'
               )}
             >
               {isDark
-                ? <Sun className="h-4 w-4 text-amber-400" />
-                : <Moon className="h-4 w-4 text-primary" />
+                ? <Sun className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-400" />
+                : <Moon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
               }
             </button>
             {/* Avatar — opens ProfileModal */}
@@ -122,7 +122,7 @@ export function Navbar({ user, onSignOut, todoCount, freeLimit, isPro, onUpgrade
               id="open-profile-btn"
               onClick={onOpenProfile}
               className={cn(
-                'w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm transition-all duration-200',
+                'w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center font-bold text-xs sm:text-sm transition-all duration-200',
                 'bg-gradient-to-br from-primary to-violet-400 text-white shadow-md shadow-primary/20',
                 'hover:scale-105 hover:shadow-lg hover:shadow-primary/30 active:scale-95',
                 'relative'
@@ -131,8 +131,8 @@ export function Navbar({ user, onSignOut, todoCount, freeLimit, isPro, onUpgrade
             >
               {initials}
               {isPro && (
-                <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-amber-400 border-2 border-background flex items-center justify-center">
-                  <Crown className="h-2 w-2 text-white" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-amber-400 border-2 border-background flex items-center justify-center">
+                  <Crown className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-white" />
                 </span>
               )}
             </button>
