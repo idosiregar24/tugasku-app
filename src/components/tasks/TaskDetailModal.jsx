@@ -228,20 +228,18 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
                 ) : (
                   <Circle className="h-5 w-5" />
                 )}
-              </button>
-
-              <div className="flex-1 min-w-0">
-                <DialogTitle className="text-base font-semibold leading-snug text-foreground">
+                      <div className="flex-1 min-w-0">
+                <DialogTitle className="text-base sm:text-lg font-semibold leading-snug text-foreground break-words">
                   {task.title}
                 </DialogTitle>
-                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
                   {/* Status badge */}
                   <span
-                    className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
+                    className={`text-[10px] sm:text-xs px-2 py-0.5 rounded-full border font-medium whitespace-nowrap ${
                       task.status === 'done'
                         ? 'bg-green-400/15 text-green-400 border-green-400/30'
                         : task.status === 'finished'
-                        ? 'bg-amber-400/15 text-amber-400 border-amber-400/30'
+                        ? 'bg-amber-400/15 text-amber-400 border-amber-400/20'
                         : 'bg-primary/15 text-primary border-primary/30'
                     }`}
                   >
@@ -253,7 +251,7 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
                   </span>
                   {/* Priority badge */}
                   <span
-                    className={`text-xs px-2 py-0.5 rounded-full border font-medium ${config.badge}`}
+                    className={`text-[10px] sm:text-xs px-2 py-0.5 rounded-full border font-medium whitespace-nowrap ${config.badge}`}
                   >
                     <span className="mr-1">{config.emoji}</span>
                     {task.priority}
@@ -350,18 +348,18 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-border bg-secondary/20 flex items-center justify-between gap-3">
+        <div className="px-4 sm:px-6 py-4 border-t border-border bg-secondary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-3">
           {/* Delete */}
-          <div>
+          <div className="order-2 sm:order-1">
             {confirmDelete ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center sm:justify-start gap-2">
                 <span className="text-xs text-destructive font-medium">Yakin hapus?</span>
                 <Button
                   size="sm"
                   variant="destructive"
                   onClick={handleDelete}
                   disabled={deleting}
-                  className="h-7 text-xs px-3"
+                  className="h-8 text-xs px-3"
                 >
                   {deleting ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Ya, Hapus'}
                 </Button>
@@ -369,7 +367,7 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
                   size="sm"
                   variant="ghost"
                   onClick={() => setConfirmDelete(false)}
-                  className="h-7 text-xs px-3"
+                  className="h-8 text-xs px-3"
                 >
                   Batal
                 </Button>
@@ -380,7 +378,7 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
                 size="sm"
                 variant="ghost"
                 onClick={handleDelete}
-                className="h-8 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center gap-1.5"
+                className="w-full sm:w-auto h-9 sm:h-8 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center gap-1.5"
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 Hapus Tugas
@@ -389,31 +387,31 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
           </div>
 
           {/* Toggle status + Save */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 order-1 sm:order-2">
             <Button
               id="toggle-status-btn"
               size="sm"
               variant="outline"
               onClick={handleToggleStatus}
               disabled={togglingStatus}
-              className="h-8 text-xs flex items-center gap-1.5"
+              className="flex-1 sm:flex-none h-10 sm:h-8 text-[11px] sm:text-xs flex items-center justify-center gap-1.5 px-3"
             >
               {togglingStatus ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : task.status === 'done' ? (
                 <>
                   <Circle className="h-3.5 w-3.5" />
-                  Buka Lagi (Todo)
+                  Buka Lagi
                 </>
               ) : task.status === 'finished' ? (
                 <>
                   <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />
-                  Tandai Submit (Done)
+                  Selesai
                 </>
               ) : (
                 <>
                   <Clock className="h-3.5 w-3.5 text-amber-400" />
-                  Selesai (Belum Submit)
+                  Belum Submit
                 </>
               )}
             </Button>
@@ -423,7 +421,7 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
               size="sm"
               onClick={handleSave}
               disabled={!hasChanges || saving || !form.title.trim()}
-              className="h-8 text-xs flex items-center gap-1.5"
+              className="flex-1 sm:flex-none h-10 sm:h-8 text-xs flex items-center justify-center gap-1.5 px-4"
             >
               {saving ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />

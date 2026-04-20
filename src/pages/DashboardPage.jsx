@@ -125,13 +125,16 @@ export function DashboardPage() {
 
         {/* Browser Notification Permission Prompt */}
         {!hasNotificationPermission && 'Notification' in window && (
-          <div className="flex items-center justify-between gap-3 mb-6 p-3 rounded-xl bg-primary/10 border border-primary/20 animate-fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20 animate-fade-in">
             <div className="flex items-center gap-2.5">
-              <Sparkles className="h-4 w-4 text-primary shrink-0" />
-              <p className="text-xs font-medium text-foreground">Aktifkan notifikasi browser untuk pengingat deadline.</p>
+              <Bell className="h-5 w-5 text-primary shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">Aktifkan Notifikasi</p>
+                <p className="text-xs text-muted-foreground">Dapatkan pengingat deadline langsung di HP/Browser.</p>
+              </div>
             </div>
-            <Button size="sm" variant="outline" className="h-8 text-[10px] px-3 font-bold uppercase tracking-wider" onClick={requestNotificationPermission}>
-              Aktifkan
+            <Button size="sm" className="w-full sm:w-auto h-9 font-bold uppercase tracking-wider px-6" onClick={requestNotificationPermission}>
+              Izinkan Notifikasi
             </Button>
           </div>
         )}
@@ -173,11 +176,11 @@ export function DashboardPage() {
         {/* Page header */}
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2">
+            <h1 className="text-xl sm:text-3xl font-bold text-foreground flex items-center gap-2">
               Papan Tugasku
-              <span aria-hidden>📋</span>
+              <span className="hidden sm:inline" aria-hidden>📋</span>
             </h1>
-            <p className="text-muted-foreground mt-1 text-sm">
+            <p className="hidden sm:block text-muted-foreground mt-1 text-sm">
               Kelola semua tugasmu dalam satu papan visual.
             </p>
           </div>
