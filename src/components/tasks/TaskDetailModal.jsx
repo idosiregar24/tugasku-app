@@ -228,7 +228,9 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
                 ) : (
                   <Circle className="h-5 w-5" />
                 )}
-                      <div className="flex-1 min-w-0">
+              </button>
+
+              <div className="flex-1 min-w-0">
                 <DialogTitle className="text-base sm:text-lg font-semibold leading-snug text-foreground break-words">
                   {task.title}
                 </DialogTitle>
