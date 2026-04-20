@@ -124,7 +124,16 @@ export function TaskForm({ onAdd, isLimitReached, todoCount, freeLimit, onClose 
         ))}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-5"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && step < 3) {
+            e.preventDefault()
+            nextStep()
+          }
+        }}
+      >
         {step === 1 && (
           <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-1">
@@ -224,26 +233,47 @@ export function TaskForm({ onAdd, isLimitReached, todoCount, freeLimit, onClose 
         {/* Action Buttons */}
         <div className="flex gap-3 pt-2">
           {step > 1 ? (
-            <Button type="button" variant="outline" className="flex-1" onClick={prevStep}>
+            <Button
+              key="btn-back"
+              type="button"
+              variant="outline"
+              className="flex-1 h-11"
+              onClick={prevStep}
+              disabled={loading}
+            >
               Kembali
             </Button>
           ) : (
-            <Button type="button" variant="ghost" className="flex-1 text-muted-foreground" onClick={onClose}>
+            <Button
+              key="btn-cancel"
+              type="button"
+              variant="ghost"
+              className="flex-1 h-11 text-muted-foreground"
+              onClick={onClose}
+              disabled={loading}
+            >
               Batal
             </Button>
           )}
 
           {step < 3 ? (
             <Button
+              key="btn-next"
               type="button"
-              className="flex-1"
+              className="flex-1 h-11"
               onClick={nextStep}
               disabled={step === 1 && !form.title.trim()}
             >
               Lanjut
             </Button>
           ) : (
-            <Button id="task-submit-btn" type="submit" className="flex-1" disabled={loading}>
+            <Button
+              key="btn-submit"
+              id="task-submit-btn"
+              type="submit"
+              className="flex-1 h-11"
+              disabled={loading}
+            >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : (
