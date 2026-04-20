@@ -91,6 +91,7 @@ export function useTasks(user, isPro = false) {
       console.log(`Auto-deleting ${tasksToDelete.length} old completed tasks`)
       tasksToDelete.forEach((task) => handleDeleteTask(task.id))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tasks, loading])
 
   const todoTasks = tasks.filter((t) => t.status === 'todo')

@@ -146,7 +146,6 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
   if (!task) return null
 
   const config = priorityConfig[task.priority] ?? priorityConfig.Medium
-  const currentConfig = priorityConfig[form.priority] ?? priorityConfig.Medium
 
   const hasChanges =
     form.title !== task.title ||

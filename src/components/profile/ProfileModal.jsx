@@ -27,7 +27,6 @@ import { format } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
 import { getMyPaymentHistory } from '@/lib/supabase/payments'
 import { cancelPro as apiCancelPro } from '@/lib/supabase/profiles'
-import { cn } from '@/lib/utils'
 import { useNavigate } from 'react-router-dom'
 import { PRO_PRICE_MONTHLY, PRO_PRICE_ANNUAL } from '@/hooks/useProfile'
 
@@ -72,6 +71,7 @@ export function ProfileModal({ open, onClose, user, profile, pendingPayment, isP
   // Fetch payment history when modal opens
   useEffect(() => {
     if (!open || !user?.id) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHistoryLoading(true)
     getMyPaymentHistory(user.id)
       .then(setHistory)
