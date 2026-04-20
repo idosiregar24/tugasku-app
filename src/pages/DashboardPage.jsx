@@ -182,11 +182,11 @@ export function DashboardPage() {
             </p>
           </div>
 
-          <div className="flex items-center flex-wrap gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               size="lg"
-              className="sm:hidden flex items-center gap-2"
+              className="sm:hidden flex items-center justify-center gap-2 h-12"
               onClick={() => setShowStats(!showStats)}
             >
               <TrendingUp className="h-4 w-4" />
@@ -197,7 +197,7 @@ export function DashboardPage() {
                 <Button
                   id="open-add-task-dialog"
                   size="lg"
-                  className="flex items-center gap-2 shrink-0"
+                  className="flex items-center justify-center gap-2 h-12 sm:h-11"
                 >
                   <Plus className="h-5 w-5" />
                   Tambah Tugas
