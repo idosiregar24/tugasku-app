@@ -67,6 +67,7 @@ export function DashboardPage() {
     addTask,
     updateTask,
     deleteTask,
+    notifications,
   } = useTasks(user, isPro)
 
   const [dialogOpen,   setDialogOpen]   = useState(false)
@@ -109,6 +110,7 @@ export function DashboardPage() {
         isPro={isPro}
         onUpgrade={() => setUpgradeOpen(true)}
         onOpenProfile={() => setProfileOpen(true)}
+        notifications={notifications}
       />
 
       <main className="relative flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">

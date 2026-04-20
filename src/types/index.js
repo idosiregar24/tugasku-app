@@ -8,8 +8,10 @@
  * @property {string} title
  * @property {string} deadline - ISO date (YYYY-MM-DD)
  * @property {Priority} priority
+ * @property {string} [notes]
  * @property {TaskStatus} status
  * @property {string} created_at
+ * @property {string} [completed_at] - ISO date when task was marked as done
  */
 
 export const PRIORITIES = /** @type {Priority[]} */ (['Low', 'Medium', 'High'])

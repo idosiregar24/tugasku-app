@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Loader2,
   Trash2,
@@ -123,7 +124,7 @@ function DeadlineInfo({ deadline }) {
  * @param {{ task: import('@/types').Task | null, open: boolean, onClose: () => void, onUpdate: Function, onDelete: Function }} props
  */
 export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
-  const [form, setForm] = useState({ title: '', deadline: '', priority: 'Medium' })
+  const [form, setForm] = useState({ title: '', deadline: '', priority: 'Medium', notes: '' })
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -136,6 +137,7 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
         title: task.title,
         deadline: task.deadline,
         priority: task.priority,
+        notes: task.notes || '',
       })
       setConfirmDelete(false)
     }
@@ -149,7 +151,8 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
   const hasChanges =
     form.title !== task.title ||
     form.deadline !== task.deadline ||
-    form.priority !== task.priority
+    form.priority !== task.priority ||
+    form.notes !== (task.notes || '')
 
   const createdAt = format(new Date(task.created_at), 'dd MMM yyyy, HH:mm', {
     locale: localeId,
@@ -163,6 +166,7 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
         title: form.title.trim(),
         deadline: form.deadline,
         priority: form.priority,
+        notes: form.notes.trim(),
       })
       onClose()
     } finally {
@@ -308,6 +312,21 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Edit: Notes */}
+          <div className="space-y-1.5">
+            <Label htmlFor="detail-notes" className="flex items-center gap-1.5 text-xs text-muted-foreground uppercase tracking-wide">
+              <Pencil className="h-3 w-3" /> Catatan
+            </Label>
+            <Textarea
+              id="detail-notes"
+              value={form.notes}
+              onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
+              maxLength={500}
+              className="text-sm resize-none min-h-[100px]"
+              placeholder="Tidak ada catatan..."
+            />
           </div>
 
           {/* Meta info */}

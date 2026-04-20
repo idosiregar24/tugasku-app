@@ -15,7 +15,7 @@ import {
   X,
   Mail,
   Code2,
-  Github,
+  GitBranch,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PRO_PRICE_MONTHLY, PRO_PRICE_ANNUAL } from '@/hooks/useProfile'

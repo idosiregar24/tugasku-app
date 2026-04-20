@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { differenceInHours, parseISO } from 'date-fns'
 import {
   getTasks,
   addTask as apiAddTask,
@@ -75,9 +76,35 @@ export function useTasks(user, isPro = false) {
     }
   }, [user])
 
+  // Auto-delete logic: tasks marked 'done' for more than 48 hours
+  useEffect(() => {
+    if (loading || tasks.length === 0) return
+
+    const now = new Date()
+    const tasksToDelete = tasks.filter((task) => {
+      if (task.status !== 'done' || !task.completed_at) return false
+      const completedAt = parseISO(task.completed_at)
+      return differenceInHours(now, completedAt) >= 48
+    })
+
+    if (tasksToDelete.length > 0) {
+      console.log(`Auto-deleting ${tasksToDelete.length} old completed tasks`)
+      tasksToDelete.forEach((task) => handleDeleteTask(task.id))
+    }
+  }, [tasks, loading])
+
   const todoTasks = tasks.filter((t) => t.status === 'todo')
   const doneTasks = tasks.filter((t) => t.status === 'done')
   const isLimitReached = todoTasks.length >= effectiveLimit
+
+  // Notification logic: find overdue or urgent tasks
+  const notifications = tasks.filter((t) => {
+    if (t.status === 'done') return false
+    const deadline = parseISO(t.deadline)
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    return deadline < now // Overdue
+  })
 
   // Add task with plan limit check
   const handleAddTask = async (taskData) => {
@@ -91,10 +118,18 @@ export function useTasks(user, isPro = false) {
 
   // Update task with optimistic UI
   const handleUpdateTask = async (id, updates) => {
+    // If marking as done, add completed_at timestamp
+    const finalUpdates = { ...updates }
+    if (updates.status === 'done') {
+      finalUpdates.completed_at = new Date().toISOString()
+    } else if (updates.status === 'todo') {
+      finalUpdates.completed_at = null // Reset if re-opened
+    }
+
     // Optimistic: update locally first
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)))
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...finalUpdates } : t)))
     try {
-      const updatedTask = await apiUpdateTask(id, updates)
+      const updatedTask = await apiUpdateTask(id, finalUpdates)
       setTasks((prev) => prev.map((t) => (t.id === id ? updatedTask : t)))
       return updatedTask
     } catch (err) {
@@ -127,5 +162,6 @@ export function useTasks(user, isPro = false) {
     addTask: handleAddTask,
     updateTask: handleUpdateTask,
     deleteTask: handleDeleteTask,
+    notifications,
   }
 }

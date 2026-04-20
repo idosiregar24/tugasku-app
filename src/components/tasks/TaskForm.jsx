@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { Loader2, Plus, Crown, Sparkles } from 'lucide-react'
 import { PRIORITIES } from '@/types'
 
@@ -20,7 +21,7 @@ const priorityDesc = { Low: 'Tidak mendesak', Medium: 'Perlu diperhatikan', High
  */
 export function TaskForm({ onAdd, isLimitReached, todoCount, freeLimit, onClose }) {
   const today = new Date().toISOString().split('T')[0]
-  const [form, setForm] = useState({ title: '', deadline: today, priority: 'Medium' })
+  const [form, setForm] = useState({ title: '', deadline: today, priority: 'Medium', notes: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -150,6 +151,21 @@ export function TaskForm({ onAdd, isLimitReached, todoCount, freeLimit, onClose 
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="task-notes">Catatan (Opsional)</Label>
+        <Textarea
+          id="task-notes"
+          placeholder="Tambahkan detail atau instruksi tugas..."
+          value={form.notes}
+          onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
+          maxLength={500}
+          className="resize-none"
+        />
+        <p className="text-xs text-muted-foreground text-right">
+          {form.notes.length}/500
+        </p>
       </div>
 
       {error && (

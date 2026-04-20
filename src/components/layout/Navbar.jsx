@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { LogOut, LayoutDashboard, Zap, Crown, Sparkles, Sun, Moon } from 'lucide-react'
+import { LogOut, LayoutDashboard, Zap, Crown, Sparkles, Sun, Moon, Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/hooks/useTheme'
 import { cn } from '@/lib/utils'
@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 /**
  * Sticky top navigation bar dengan info user, plan indicator, dan avatar profil
  */
-export function Navbar({ user, onSignOut, todoCount, freeLimit, isPro, onUpgrade, onOpenProfile }) {
+export function Navbar({ user, onSignOut, todoCount, freeLimit, isPro, onUpgrade, onOpenProfile, notifications = [] }) {
   const { isDark, toggleTheme } = useTheme()
   const percentage = Math.min((todoCount / freeLimit) * 100, 100)
   const isNearLimit = percentage >= 80
@@ -80,6 +80,26 @@ export function Navbar({ user, onSignOut, todoCount, freeLimit, isPro, onUpgrade
 
           {/* ── Right: Theme toggle + Avatar + Logout ── */}
           <div className="flex items-center gap-2 shrink-0">
+            {/* Notification Bell */}
+            <div className="relative">
+              <button
+                className={cn(
+                  'w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200',
+                  'border border-border hover:border-primary/40',
+                  'bg-secondary hover:bg-secondary/80 active:scale-95',
+                  'text-muted-foreground hover:text-foreground'
+                )}
+                title={notifications.length > 0 ? `${notifications.length} tugas terlambat!` : 'Tidak ada notifikasi'}
+              >
+                <Bell className={cn('h-4 w-4', notifications.length > 0 ? 'text-red-400 animate-pulse' : '')} />
+              </button>
+              {notifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-background">
+                  {notifications.length}
+                </span>
+              )}
+            </div>
+
             {/* Theme toggle */}
             <button
               id="theme-toggle-btn"
