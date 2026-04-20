@@ -17,7 +17,7 @@ import {
   Copy,
   Check,
   Zap,
-  Infinity,
+  Infinity as InfinityIcon,
   Clock,
   MessageCircle,
   RefreshCw,
@@ -264,7 +264,7 @@ export function UpgradeModal({ open, onClose, user }) {
                       </div>
                     ))}
                     <div className="flex items-center gap-2">
-                      <Infinity className="h-3.5 w-3.5 text-primary shrink-0" />
+                      <InfinityIcon className="h-3.5 w-3.5 text-primary shrink-0" />
                       <span className="text-sm font-semibold text-primary">
                         Tugas aktif tak terbatas
                       </span>
