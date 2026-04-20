@@ -30,6 +30,7 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
+import { cn } from '@/lib/utils'
 
 function StatCard({ label, value, icon, colorClass }) {
   const Icon = icon
@@ -70,12 +71,14 @@ export function DashboardPage() {
     updateTask,
     deleteTask,
     notifications,
+    requestNotificationPermission,
   } = useTasks(user, isPro)
 
   const [dialogOpen,   setDialogOpen]   = useState(false)
   const [selectedTask, setSelectedTask] = useState(null)
   const [upgradeOpen,  setUpgradeOpen]  = useState(false)
   const [profileOpen,  setProfileOpen]  = useState(false)
+  const [showStats,    setShowStats]    = useState(false) // Default hide on mobile, show on desktop via CSS
 
   const handleOpenDetail  = (task) => setSelectedTask(task)
   const handleCloseDetail = ()     => setSelectedTask(null)
@@ -83,6 +86,8 @@ export function DashboardPage() {
   const totalTasks      = todoTasks.length + finishedTasks.length + doneTasks.length
   const finishedTotal   = finishedTasks.length + doneTasks.length
   const completionRate  = totalTasks > 0 ? Math.round((finishedTotal / totalTasks) * 100) : 0
+
+  const hasNotificationPermission = 'Notification' in window && Notification.permission === 'granted'
 
   if (loading || profileLoading) {
     return (
@@ -117,6 +122,19 @@ export function DashboardPage() {
       />
 
       <main className="relative flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+
+        {/* Browser Notification Permission Prompt */}
+        {!hasNotificationPermission && 'Notification' in window && (
+          <div className="flex items-center justify-between gap-3 mb-6 p-3 rounded-xl bg-primary/10 border border-primary/20 animate-fade-in">
+            <div className="flex items-center gap-2.5">
+              <Sparkles className="h-4 w-4 text-primary shrink-0" />
+              <p className="text-xs font-medium text-foreground">Aktifkan notifikasi browser untuk pengingat deadline.</p>
+            </div>
+            <Button size="sm" variant="outline" className="h-8 text-[10px] px-3 font-bold uppercase tracking-wider" onClick={requestNotificationPermission}>
+              Aktifkan
+            </Button>
+          </div>
+        )}
 
         {/* Pending payment banner */}
         {pendingPayment && !isPro && (
@@ -164,33 +182,44 @@ export function DashboardPage() {
             </p>
           </div>
 
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button
-                id="open-add-task-dialog"
-                size="lg"
-                className="flex items-center gap-2 shrink-0"
-              >
-                <Plus className="h-5 w-5" />
-                Tambah Tugas
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>
-                  {isLimitReached ? '⚡ Upgrade ke Pro' : '➕ Tugas Baru'}
-                </DialogTitle>
-              </DialogHeader>
-              <TaskForm
-                onAdd={addTask}
-                isLimitReached={isLimitReached}
-                todoCount={todoTasks.length}
-                freeLimit={taskLimit}
-                onClose={() => setDialogOpen(false)}
-                onUpgrade={() => { setDialogOpen(false); setUpgradeOpen(true) }}
-              />
-            </DialogContent>
-          </Dialog>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="lg"
+              className="sm:hidden flex items-center gap-2"
+              onClick={() => setShowStats(!showStats)}
+            >
+              <TrendingUp className="h-4 w-4" />
+              {showStats ? 'Sembunyikan Stat' : 'Lihat Statistik'}
+            </Button>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  id="open-add-task-dialog"
+                  size="lg"
+                  className="flex items-center gap-2 shrink-0"
+                >
+                  <Plus className="h-5 w-5" />
+                  Tambah Tugas
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>
+                    {isLimitReached ? '⚡ Upgrade ke Pro' : '➕ Tugas Baru'}
+                  </DialogTitle>
+                </DialogHeader>
+                <TaskForm
+                  onAdd={addTask}
+                  isLimitReached={isLimitReached}
+                  todoCount={todoTasks.length}
+                  freeLimit={taskLimit}
+                  onClose={() => setDialogOpen(false)}
+                  onUpgrade={() => { setDialogOpen(false); setUpgradeOpen(true) }}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {/* Error banner */}
@@ -202,7 +231,10 @@ export function DashboardPage() {
         )}
 
         {/* Stats cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
+        <div className={cn(
+          "grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8 transition-all duration-300",
+          showStats ? "grid" : "hidden sm:grid"
+        )}>
           <StatCard label="Total Tugas"       value={totalTasks}        icon={TrendingUp}  colorClass="bg-primary/15 text-primary" />
           <StatCard label="Perlu Dikerjakan"  value={todoTasks.length}  icon={ListTodo}    colorClass="bg-violet-400/15 text-violet-400" />
           <StatCard label="Belum Submit"      value={finishedTasks.length} icon={Clock}    colorClass="bg-amber-400/15 text-amber-400" />
@@ -211,7 +243,10 @@ export function DashboardPage() {
 
         {/* Completion progress */}
         {totalTasks > 0 && (
-          <div className="mb-8 p-4 bg-card border border-border rounded-xl flex items-center gap-4">
+          <div className={cn(
+            "mb-8 p-4 bg-card border border-border rounded-xl flex items-center gap-4 transition-all",
+            showStats ? "flex" : "hidden sm:flex"
+          )}>
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-foreground">Progress Keseluruhan</span>

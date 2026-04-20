@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { differenceInHours, parseISO } from 'date-fns'
+import { differenceInHours, differenceInDays, parseISO } from 'date-fns'
 import {
   getTasks,
   addTask as apiAddTask,
@@ -99,14 +99,32 @@ export function useTasks(user, isPro = false) {
   const doneTasks = tasks.filter((t) => t.status === 'done')
   const isLimitReached = todoTasks.length >= effectiveLimit
 
-  // Notification logic: find overdue or urgent tasks
+  // Notification logic: find overdue or urgent tasks (due in 2 days)
   const notifications = tasks.filter((t) => {
-    if (t.status === 'done' || t.status === 'finished') return false
+    if (t.status === 'done') return false
     const deadline = parseISO(t.deadline)
-    const now = new Date()
-    now.setHours(0, 0, 0, 0)
-    return deadline < now // Overdue
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    const diffDays = differenceInDays(deadline, today)
+    // Notifikasi jika:
+    // 1. Terlambat (diffDays < 0)
+    // 2. Deadline hari ini (diffDays === 0)
+    // 3. Deadline 1-2 hari lagi (diffDays <= 2)
+    return diffDays <= 2
   })
+
+  // Trigger browser notification when urgent tasks found
+  useEffect(() => {
+    if (loading || notifications.length === 0) return
+    if (Notification.permission === 'granted') {
+      const urgentCount = notifications.length
+      sendBrowserNotification(
+        'Tugasku: Pengingat Deadline! ⚠️',
+        `Ada ${urgentCount} tugas yang perlu perhatian (Deadline dekat / Belum submit).`
+      )
+    }
+  }, [notifications.length, loading])
 
   // Add task with plan limit check
   const handleAddTask = async (taskData) => {
@@ -168,5 +186,27 @@ export function useTasks(user, isPro = false) {
     updateTask: handleUpdateTask,
     deleteTask: handleDeleteTask,
     notifications,
+    requestNotificationPermission: () => {
+      if (!('Notification' in window)) return
+      Notification.requestPermission()
+    },
+  }
+}
+
+/**
+ * Helper to send browser notification
+ * @param {string} title
+ * @param {string} body
+ */
+function sendBrowserNotification(title, body) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return
+
+  try {
+    new Notification(title, {
+      body,
+      icon: '/favicon.ico', // Pastikan icon tersedia
+    })
+  } catch (err) {
+    console.error('Failed to send notification:', err)
   }
 }
