@@ -24,7 +24,7 @@ export function Navbar({ user, onSignOut, todoCount, freeLimit, isPro, onUpgrade
             <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center">
               <LayoutDashboard className="h-4 w-4 text-primary" />
             </div>
-            <span className="text-lg font-bold bg-gradient-to-r from-primary via-violet-400 to-purple-300 bg-clip-text text-transparent">
+            <span className="hidden sm:inline text-lg font-bold bg-gradient-to-r from-primary via-violet-400 to-purple-300 bg-clip-text text-transparent">
               Tugasku
             </span>
           </div>
