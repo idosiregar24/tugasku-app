@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getProfile, upgradeToPro as apiUpgrade, cancelPro as apiCancel } from '@/lib/supabase/profiles'
+import { getProfile, cancelPro as apiCancel } from '@/lib/supabase/profiles'
 import { getPendingPayment } from '@/lib/supabase/payments'
 
 export const PRO_PRICE_MONTHLY = 49000

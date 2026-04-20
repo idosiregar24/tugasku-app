@@ -4,7 +4,7 @@ import {
   Crown,
   CheckCircle2,
   Zap,
-  Infinity,
+  Infinity as InfinityIcon,
   Users,
   BarChart3,
   Bell,
@@ -41,7 +41,7 @@ const FREE_FEATURES = [
 ]
 
 const PRO_FEATURES = [
-  { icon: Infinity, text: 'Tugas aktif tak terbatas', highlight: true },
+  { icon: InfinityIcon, text: 'Tugas aktif tak terbatas', highlight: true },
   { icon: BarChart3, text: 'Laporan & analitik produktivitas' },
   { icon: Bell, text: 'Reminder & notifikasi otomatis' },
   { icon: Download, text: 'Ekspor data ke CSV / PDF' },

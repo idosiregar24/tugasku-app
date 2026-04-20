@@ -61,7 +61,8 @@ function StatusBadge({ status }) {
 }
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
-function StatCard({ icon: Icon, label, value, colorClass, note }) {
+function StatCard({ icon, label, value, colorClass, note }) {
+  const Icon = icon
   return (
     <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
       <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${colorClass}`}>
@@ -188,7 +189,7 @@ function PaymentRow({ record, onConfirm, onReject }) {
 
 // ─── Main Admin Page ──────────────────────────────────────────────────────────
 export function AdminPage() {
-  const { user, signOut } = useAuth()
+  const { user } = useAuth()
   const { profile, loading: profileLoading } = useProfile(user)
 
   const [activeTab, setActiveTab] = useState('pending')
@@ -214,7 +215,7 @@ export function AdminPage() {
       setPending(pendingData)
       setHistory(historyData)
       setUsers(usersData)
-    } catch (err) {
+    } catch {
       setError('Gagal memuat data admin. Pastikan kamu sudah set is_admin = true dan RLS policy sudah dibuat.')
     } finally {
       setLoading(false)

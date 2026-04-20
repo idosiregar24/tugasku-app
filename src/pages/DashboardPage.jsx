@@ -31,7 +31,8 @@ import {
 import { format } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
 
-function StatCard({ label, value, icon: Icon, colorClass }) {
+function StatCard({ label, value, icon, colorClass }) {
+  const Icon = icon
   return (
     <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colorClass}`}>
