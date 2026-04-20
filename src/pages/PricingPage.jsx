@@ -415,7 +415,7 @@ export function PricingPage() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                <Github className="h-3.5 w-3.5" />
+                <GitBranch className="h-3.5 w-3.5" />
                 idosiregar24/tugasku-app
               </a>
               <p className="text-xs text-muted-foreground">
