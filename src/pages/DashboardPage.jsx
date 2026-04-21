@@ -21,28 +21,47 @@ import {
   Loader2,
   AlertCircle,
   TrendingUp,
+  LayoutDashboard,
   ListTodo,
   CheckCircle2,
   Crown,
   Sparkles,
   Clock,
+  Zap,
+  Bell,
   Code2,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 
-function StatCard({ label, value, icon, colorClass }) {
+function StatCard({ label, value, icon, colorClass = '' }) {
   const Icon = icon
+  const classes = colorClass || ''
+  // Separate color classes for specific slots
+  const textClass = classes.split(' ').find(c => c.startsWith('text-')) || 'text-primary'
+  const bgClass = classes.split(' ').find(c => c.startsWith('bg-')) || 'bg-primary/10'
+  const borderClass = classes.split(' ').find(c => c.startsWith('border-')) || 'border-primary/20'
+
   return (
-    <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colorClass}`}>
-        <Icon className="h-5 w-5" />
+    <div className="relative group overflow-hidden bg-card border border-border rounded-2xl p-5 flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/5 active:scale-[0.98]">
+      <div className={cn(
+        "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:rotate-6",
+        bgClass,
+        borderClass,
+        "border shadow-sm"
+      )}>
+        <Icon className={cn("h-6 w-6", textClass)} />
       </div>
       <div>
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-2xl font-bold text-foreground leading-none mt-0.5">{value}</p>
+        <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-widest mb-0.5">{label}</p>
+        <p className="text-2xl font-extrabold text-foreground tracking-tight">{value}</p>
       </div>
+      {/* Subtle interactive accent */}
+      <div className={cn(
+        "absolute -right-2 -bottom-2 w-12 h-12 rounded-full blur-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-500",
+        textClass.replace('text-', 'bg-')
+      )} />
     </div>
   )
 }
@@ -83,8 +102,8 @@ export function DashboardPage() {
   const handleOpenDetail  = (task) => setSelectedTask(task)
   const handleCloseDetail = ()     => setSelectedTask(null)
 
-  const totalTasks      = todoTasks.length + finishedTasks.length + doneTasks.length
-  const finishedTotal   = finishedTasks.length + doneTasks.length
+  const totalTasks      = (todoTasks?.length || 0) + (finishedTasks?.length || 0) + (doneTasks?.length || 0)
+  const finishedTotal   = (finishedTasks?.length || 0) + (doneTasks?.length || 0)
   const completionRate  = totalTasks > 0 ? Math.round((finishedTotal / totalTasks) * 100) : 0
 
   const hasNotificationPermission = 'Notification' in window && Notification.permission === 'granted'
@@ -113,7 +132,7 @@ export function DashboardPage() {
       <Navbar
         user={user}
         onSignOut={signOut}
-        todoCount={todoTasks.length}
+        todoCount={todoTasks?.length || 0}
         freeLimit={FREE_TASK_LIMIT}
         isPro={isPro}
         onUpgrade={() => setUpgradeOpen(true)}
@@ -174,25 +193,27 @@ export function DashboardPage() {
         )}
 
         {/* Page header */}
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-xl sm:text-3xl font-bold text-foreground flex items-center gap-2">
-              Papan Tugasku
-              <span className="hidden sm:inline" aria-hidden>📋</span>
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 mb-10">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
+              <span className="bg-gradient-to-br from-primary to-violet-400 bg-clip-text text-transparent">
+                Dashboard
+              </span>
+              <span className="hidden sm:inline text-2xl" aria-hidden>🚀</span>
             </h1>
-            <p className="hidden sm:block text-muted-foreground mt-1 text-sm">
-              Kelola semua tugasmu dalam satu papan visual.
+            <p className="hidden sm:block text-muted-foreground text-sm font-medium opacity-80">
+              Pantau produktivitas dan kelola tugas harianmu.
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <Button
               variant="outline"
               size="lg"
-              className="sm:hidden flex items-center justify-center gap-2 h-12"
+              className="sm:hidden flex items-center justify-center gap-2 h-12 bg-background/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all"
               onClick={() => setShowStats(!showStats)}
             >
-              <TrendingUp className="h-4 w-4" />
+              <TrendingUp className="h-4 w-4 text-primary" />
               {showStats ? 'Sembunyikan Stat' : 'Lihat Statistik'}
             </Button>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -200,16 +221,16 @@ export function DashboardPage() {
                 <Button
                   id="open-add-task-dialog"
                   size="lg"
-                  className="flex items-center justify-center gap-2 h-12 sm:h-11"
+                  className="flex items-center justify-center gap-2 h-12 sm:h-11 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <Plus className="h-5 w-5" />
-                  Tambah Tugas
+                  Tambah Tugas Baru
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>
-                    {isLimitReached ? '⚡ Upgrade ke Pro' : '➕ Tugas Baru'}
+                    {isLimitReached ? '⚡ Upgrade ke Pro' : '➕ Buat Tugas Baru'}
                   </DialogTitle>
                 </DialogHeader>
                 <TaskForm
@@ -233,15 +254,15 @@ export function DashboardPage() {
           </div>
         )}
 
-        {/* Stats cards */}
+        {/* Stats Grid */}
         <div className={cn(
-          "grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8 transition-all duration-300",
-          showStats ? "grid" : "hidden sm:grid"
+          "grid grid-cols-1 sm:grid-cols-4 gap-5 mb-10 transition-all duration-500 ease-in-out",
+          showStats ? "grid opacity-100 translate-y-0" : "hidden sm:grid"
         )}>
-          <StatCard label="Total Tugas"       value={totalTasks}        icon={TrendingUp}  colorClass="bg-primary/15 text-primary" />
-          <StatCard label="Perlu Dikerjakan"  value={todoTasks.length}  icon={ListTodo}    colorClass="bg-violet-400/15 text-violet-400" />
-          <StatCard label="Belum Submit"      value={finishedTasks.length} icon={Clock}    colorClass="bg-amber-400/15 text-amber-400" />
-          <StatCard label="Selesai"           value={doneTasks.length}  icon={CheckCircle2} colorClass="bg-green-400/15 text-green-400" />
+          <StatCard label="Total Tugas"       value={totalTasks}        icon={LayoutDashboard} colorClass="bg-primary/15 text-primary border-primary/20" />
+          <StatCard label="Perlu Dikerjakan"  value={todoTasks.length}  icon={ListTodo}        colorClass="bg-violet-400/15 text-violet-400 border-violet-400/20" />
+          <StatCard label="Belum Submit"      value={finishedTasks.length} icon={Clock}        colorClass="bg-amber-400/15 text-amber-400 border-amber-400/20" />
+          <StatCard label="Selesai"           value={doneTasks.length}  icon={CheckCircle2}    colorClass="bg-green-400/15 text-green-400 border-green-400/20" />
         </div>
 
         {/* Completion progress */}

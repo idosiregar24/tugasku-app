@@ -24,9 +24,14 @@ export function Navbar({ user, onSignOut, todoCount, freeLimit, isPro, onUpgrade
             <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center">
               <LayoutDashboard className="h-4 w-4 text-primary" />
             </div>
-            <span className="hidden sm:inline text-lg font-bold bg-gradient-to-r from-primary via-violet-400 to-purple-300 bg-clip-text text-transparent">
-              Tugasku
-            </span>
+            <div className="flex flex-col -space-y-1">
+              <span className="hidden sm:inline text-lg font-bold bg-gradient-to-r from-primary via-violet-400 to-purple-300 bg-clip-text text-transparent">
+                Tugasku
+              </span>
+              <span className="text-[10px] font-medium text-muted-foreground/60 tracking-wider">
+                v2.0.0
+              </span>
+            </div>
           </div>
 
           {/* ── Center: Plan indicator ── */}
