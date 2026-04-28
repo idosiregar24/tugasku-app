@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom'
-import { LogOut, LayoutDashboard, Zap, Crown, Sparkles, Sun, Moon, Bell } from 'lucide-react'
+import { LogOut, LayoutDashboard, Zap, Crown, Sparkles, Sun, Moon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/hooks/useTheme'
 import { cn } from '@/lib/utils'
+import { NotificationPanel } from '@/components/layout/NotificationPanel'
 
 /**
  * Sticky top navigation bar dengan info user, plan indicator, dan avatar profil
  */
-export function Navbar({ user, onSignOut, todoCount, freeLimit, isPro, onUpgrade, onOpenProfile, notifications = [] }) {
+export function Navbar({ user, onSignOut, todoCount, freeLimit, isPro, onUpgrade, onOpenProfile, notifications = [], onOpenDetail }) {
   const { isDark, toggleTheme } = useTheme()
   const percentage = Math.min((todoCount / freeLimit) * 100, 100)
   const isNearLimit = percentage >= 80
@@ -85,25 +86,11 @@ export function Navbar({ user, onSignOut, todoCount, freeLimit, isPro, onUpgrade
 
           {/* ── Right: Theme toggle + Avatar + Logout ── */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Notification Bell */}
-            <div className="relative">
-              <button
-                className={cn(
-                  'w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-all duration-200',
-                  'border border-border hover:border-primary/40',
-                  'bg-secondary hover:bg-secondary/80 active:scale-95',
-                  'text-muted-foreground hover:text-foreground'
-                )}
-                title={notifications.length > 0 ? `${notifications.length} tugas terlambat!` : 'Tidak ada notifikasi'}
-              >
-                <Bell className={cn('h-3.5 w-3.5 sm:h-4 sm:w-4', notifications.length > 0 ? 'text-red-400 animate-pulse' : '')} />
-              </button>
-              {notifications.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-red-500 text-white text-[9px] sm:text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-background">
-                  {notifications.length}
-                </span>
-              )}
-            </div>
+            {/* Notification Panel */}
+            <NotificationPanel
+              notifications={notifications}
+              onOpenDetail={onOpenDetail ?? (() => {})}
+            />
 
             {/* Theme toggle */}
             <button

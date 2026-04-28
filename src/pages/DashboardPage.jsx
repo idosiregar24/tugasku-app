@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useTasks } from '@/hooks/useTasks'
 import { useProfile } from '@/hooks/useProfile'
@@ -6,6 +6,7 @@ import { Navbar } from '@/components/layout/Navbar'
 import { KanbanBoard } from '@/components/tasks/KanbanBoard'
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { TaskDetailModal } from '@/components/tasks/TaskDetailModal'
+import { SearchFilter } from '@/components/tasks/SearchFilter'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
 import { ProfileModal } from '@/components/profile/ProfileModal'
 import { Button } from '@/components/ui/button'
@@ -27,13 +28,12 @@ import {
   Crown,
   Sparkles,
   Clock,
-  Zap,
-  Bell,
   Code2,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
+import { differenceInDays, parseISO } from 'date-fns'
 
 function StatCard({ label, value, icon, colorClass = '' }) {
   const Icon = icon
@@ -64,6 +64,40 @@ function StatCard({ label, value, icon, colorClass = '' }) {
       )} />
     </div>
   )
+}
+
+/** Filter + sort tasks based on query, priority filter, and sort key */
+function applyFilters(tasks, query, priorities, sortKey) {
+  let result = [...tasks]
+
+  // Text search
+  if (query.trim()) {
+    const q = query.trim().toLowerCase()
+    result = result.filter(t =>
+      t.title.toLowerCase().includes(q) ||
+      (t.notes || '').toLowerCase().includes(q)
+    )
+  }
+
+  // Priority filter
+  if (priorities.length > 0) {
+    result = result.filter(t => priorities.includes(t.priority))
+  }
+
+  // Sort
+  if (sortKey === 'deadline_asc') {
+    result.sort((a, b) => a.deadline.localeCompare(b.deadline))
+  } else if (sortKey === 'deadline_desc') {
+    result.sort((a, b) => b.deadline.localeCompare(a.deadline))
+  } else if (sortKey === 'priority') {
+    const order = { High: 0, Medium: 1, Low: 2 }
+    result.sort((a, b) => (order[a.priority] ?? 1) - (order[b.priority] ?? 1))
+  } else {
+    // 'created' — newest first (default order from API)
+    result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+  }
+
+  return result
 }
 
 export function DashboardPage() {
@@ -97,7 +131,12 @@ export function DashboardPage() {
   const [selectedTask, setSelectedTask] = useState(null)
   const [upgradeOpen,  setUpgradeOpen]  = useState(false)
   const [profileOpen,  setProfileOpen]  = useState(false)
-  const [showStats,    setShowStats]    = useState(false) // Default hide on mobile, show on desktop via CSS
+  const [showStats,    setShowStats]    = useState(false)
+
+  // Search / filter / sort state
+  const [searchQuery,      setSearchQuery]      = useState('')
+  const [filterPriorities, setFilterPriorities] = useState([])
+  const [sortKey,          setSortKey]          = useState('created')
 
   const handleOpenDetail  = (task) => setSelectedTask(task)
   const handleCloseDetail = ()     => setSelectedTask(null)
@@ -107,6 +146,15 @@ export function DashboardPage() {
   const completionRate  = totalTasks > 0 ? Math.round((finishedTotal / totalTasks) * 100) : 0
 
   const hasNotificationPermission = 'Notification' in window && Notification.permission === 'granted'
+
+  const isFiltering = searchQuery.trim() !== '' || filterPriorities.length > 0 || sortKey !== 'created'
+
+  // Apply filters to each column
+  const filteredTodo     = useMemo(() => applyFilters(todoTasks,     searchQuery, filterPriorities, sortKey), [todoTasks,     searchQuery, filterPriorities, sortKey])
+  const filteredFinished = useMemo(() => applyFilters(finishedTasks, searchQuery, filterPriorities, sortKey), [finishedTasks, searchQuery, filterPriorities, sortKey])
+  const filteredDone     = useMemo(() => applyFilters(doneTasks,     searchQuery, filterPriorities, sortKey), [doneTasks,     searchQuery, filterPriorities, sortKey])
+
+  const filteredTotal = filteredTodo.length + filteredFinished.length + filteredDone.length
 
   if (loading || profileLoading) {
     return (
@@ -138,6 +186,7 @@ export function DashboardPage() {
         onUpgrade={() => setUpgradeOpen(true)}
         onOpenProfile={() => setProfileOpen(true)}
         notifications={notifications}
+        onOpenDetail={handleOpenDetail}
       />
 
       <main className="relative flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
@@ -146,7 +195,7 @@ export function DashboardPage() {
         {!hasNotificationPermission && 'Notification' in window && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20 animate-fade-in">
             <div className="flex items-center gap-2.5">
-              <Bell className="h-5 w-5 text-primary shrink-0" />
+              <div className="h-5 w-5 text-primary shrink-0">🔔</div>
               <div>
                 <p className="text-sm font-semibold text-foreground">Aktifkan Notifikasi</p>
                 <p className="text-xs text-muted-foreground">Dapatkan pengingat deadline langsung di HP/Browser.</p>
@@ -286,11 +335,29 @@ export function DashboardPage() {
           </div>
         )}
 
+        {/* Search & Filter Bar */}
+        <SearchFilter
+          onSearch={setSearchQuery}
+          onFilter={setFilterPriorities}
+          onSort={setSortKey}
+        />
+
+        {/* Filtered result count banner */}
+        {isFiltering && (
+          <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground animate-fade-in">
+            <span>Menampilkan</span>
+            <span className="font-semibold text-foreground">{filteredTotal}</span>
+            <span>dari</span>
+            <span className="font-semibold text-foreground">{totalTasks}</span>
+            <span>tugas</span>
+          </div>
+        )}
+
         {/* Kanban Board */}
         <KanbanBoard
-          todoTasks={todoTasks}
-          finishedTasks={finishedTasks}
-          doneTasks={doneTasks}
+          todoTasks={filteredTodo}
+          finishedTasks={filteredFinished}
+          doneTasks={filteredDone}
           onUpdateTask={updateTask}
           onDeleteTask={deleteTask}
           onOpenDetail={handleOpenDetail}

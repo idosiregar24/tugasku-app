@@ -3,25 +3,8 @@ import { CSS } from '@dnd-kit/utilities'
 import { format, differenceInDays, parseISO } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
 import { Trash2, GripVertical, Clock, AlertTriangle, CalendarCheck } from 'lucide-react'
-
-/** Priority visual config */
-const priorityConfig = {
-  High: {
-    border: 'border-l-red-500',
-    badge: 'bg-red-500/15 text-red-400 border-red-500/30',
-    dot: 'bg-red-500',
-  },
-  Medium: {
-    border: 'border-l-amber-400',
-    badge: 'bg-amber-400/15 text-amber-400 border-amber-400/30',
-    dot: 'bg-amber-400',
-  },
-  Low: {
-    border: 'border-l-blue-400',
-    badge: 'bg-blue-400/15 text-blue-400 border-blue-400/30',
-    dot: 'bg-blue-400',
-  },
-}
+import { priorityConfig } from '@/lib/constants'
+import { useState } from 'react'
 
 function DeadlineLabel({ deadline }) {
   // Parse YYYY-MM-DD from Supabase date column
@@ -70,10 +53,12 @@ function DeadlineLabel({ deadline }) {
 }
 
 /**
- * Draggable task card with priority border, deadline label, and delete button
+ * Draggable task card with priority border, deadline label, and delete button (with confirm)
  * @param {{ task: import('@/types').Task, onDelete: (id: string) => void, onOpenDetail?: (task: import('@/types').Task) => void, isOverlay?: boolean }} props
  */
 export function TaskCard({ task, onDelete, onOpenDetail, isOverlay = false }) {
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
     data: { task, status: task.status },
@@ -85,6 +70,17 @@ export function TaskCard({ task, onDelete, onOpenDetail, isOverlay = false }) {
   const style = isOverlay
     ? {}
     : { transform: CSS.Translate.toString(transform) }
+
+  const handleDeleteClick = (e) => {
+    e.stopPropagation()
+    if (!confirmDelete) {
+      setConfirmDelete(true)
+      // Auto-reset after 3 seconds
+      setTimeout(() => setConfirmDelete(false), 3000)
+      return
+    }
+    onDelete(task.id)
+  }
 
   return (
     <div
@@ -148,18 +144,27 @@ export function TaskCard({ task, onDelete, onOpenDetail, isOverlay = false }) {
           </div>
         </div>
 
-        {/* Delete button */}
+        {/* Delete button with confirm */}
         {!isOverlay && (
           <button
             id={`delete-task-${task.id}`}
-            onClick={(e) => {
-              e.stopPropagation()
-              onDelete(task.id)
-            }}
-            className="shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-150 p-1.5 rounded-lg hover:bg-destructive/15 hover:text-destructive text-muted-foreground/40"
-            aria-label={`Hapus tugas: ${task.title}`}
+            onClick={handleDeleteClick}
+            className={[
+              'shrink-0 transition-all duration-150 p-1.5 rounded-lg text-xs font-semibold',
+              confirmDelete
+                ? 'opacity-100 bg-destructive/20 text-destructive border border-destructive/30 px-2 scale-110'
+                : 'opacity-0 group-hover:opacity-100 hover:bg-destructive/15 hover:text-destructive text-muted-foreground/40',
+            ].join(' ')}
+            aria-label={confirmDelete ? 'Konfirmasi hapus' : `Hapus tugas: ${task.title}`}
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            {confirmDelete ? (
+              <span className="flex items-center gap-1">
+                <Trash2 className="w-3 h-3" />
+                Hapus?
+              </span>
+            ) : (
+              <Trash2 className="w-3.5 h-3.5" />
+            )}
           </button>
         )}
       </div>

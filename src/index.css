@@ -87,12 +87,16 @@
   }
 }
 
-/* Smooth transition for all themeable elements */
-*, *::before, *::after {
-  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease;
-}
-
 /* Disable transition on first load */
 .no-transition * {
   transition: none !important;
+}
+
+/* Animate-fade-in utility */
+@keyframes animate-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: animate-fade-in 0.25s ease-out both;
 }
