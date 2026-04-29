@@ -28,5 +28,5 @@ export const priorityConfig = {
   },
 }
 
-export const priorityEmoji = { Low: '🔵', Medium: '🟡', High: '🔴' }
+export const priorityColor = { Low: 'bg-blue-400', Medium: 'bg-amber-400', High: 'bg-red-500' }
 export const priorityDesc  = { Low: 'Tidak mendesak', Medium: 'Perlu diperhatikan', High: 'Sangat mendesak' }

@@ -11,16 +11,15 @@ const SORT_OPTIONS = [
 ]
 
 const priorityColor = {
-  High:   'bg-red-500/15 text-red-400 border-red-500/30 hover:bg-red-500/25',
-  Medium: 'bg-amber-400/15 text-amber-400 border-amber-400/30 hover:bg-amber-400/25',
-  Low:    'bg-blue-400/15 text-blue-400 border-blue-400/30 hover:bg-blue-400/25',
+  High:   'bg-red-500/5 text-red-400 border-red-500/20 hover:bg-red-500/10',
+  Medium: 'bg-amber-400/5 text-amber-400 border-amber-400/20 hover:bg-amber-400/10',
+  Low:    'bg-blue-400/5 text-blue-400 border-blue-400/20 hover:bg-blue-400/10',
 }
 const priorityActiveColor = {
-  High:   'bg-red-500/30 text-red-300 border-red-500/60 ring-1 ring-red-500/30',
-  Medium: 'bg-amber-400/30 text-amber-300 border-amber-400/60 ring-1 ring-amber-400/30',
-  Low:    'bg-blue-400/30 text-blue-300 border-blue-400/60 ring-1 ring-blue-400/30',
+  High:   'bg-red-500/20 text-red-300 border-red-500/40 ring-1 ring-red-500/20',
+  Medium: 'bg-amber-400/20 text-amber-300 border-amber-400/40 ring-1 ring-amber-400/20',
+  Low:    'bg-blue-400/20 text-blue-300 border-blue-400/40 ring-1 ring-blue-400/20',
 }
-const priorityEmoji = { High: '🔴', Medium: '🟡', Low: '🔵' }
 
 /**
  * Search + filter bar for the dashboard Kanban board
@@ -63,32 +62,32 @@ export function SearchFilter({ onSearch, onFilter, onSort }) {
   const hasFilters = query.trim() !== '' || activePriorities.length > 0 || activeSort !== 'created'
 
   return (
-    <div className="flex flex-col gap-3 mb-8">
+    <div className="flex flex-col gap-4 mb-8">
       {/* Search + Sort row */}
       <div className="flex gap-2">
         {/* Search input */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 pointer-events-none" />
           <input
             id="task-search-input"
             type="text"
-            placeholder="Cari tugas..."
+            placeholder="Cari tugas harianmu..."
             value={query}
             onChange={e => handleSearch(e.target.value)}
             className={cn(
-              'w-full h-10 pl-9 pr-9 rounded-xl border border-border bg-card text-sm text-foreground',
-              'placeholder:text-muted-foreground/50',
-              'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50',
-              'transition-all duration-200',
+              'w-full h-11 pl-10 pr-10 rounded-2xl border border-border/40 bg-card/40 text-sm text-foreground backdrop-blur-sm',
+              'placeholder:text-muted-foreground/40 placeholder:font-medium',
+              'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40',
+              'transition-all duration-300',
             )}
           />
           {query && (
             <button
               onClick={() => handleSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground transition-colors"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-foreground transition-colors"
               aria-label="Hapus pencarian"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-4 w-4" />
             </button>
           )}
         </div>
@@ -99,34 +98,31 @@ export function SearchFilter({ onSearch, onFilter, onSort }) {
             id="task-sort-btn"
             onClick={() => setShowSort(s => !s)}
             className={cn(
-              'h-10 px-3 rounded-xl border text-sm font-medium flex items-center gap-1.5 transition-all duration-200',
+              'h-11 px-4 rounded-2xl border text-sm font-bold flex items-center gap-2 transition-all duration-300',
               activeSort !== 'created'
                 ? 'border-primary/50 bg-primary/10 text-primary'
-                : 'border-border bg-card text-muted-foreground hover:text-foreground hover:border-border/80'
+                : 'border-border/40 bg-card/40 text-muted-foreground hover:text-foreground hover:border-primary/30'
             )}
           >
-            <SlidersHorizontal className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">
+            <SlidersHorizontal className="h-4 w-4" />
+            <span className="hidden sm:inline uppercase tracking-wider text-[10px]">
               {SORT_OPTIONS.find(s => s.value === activeSort)?.label ?? 'Urut'}
             </span>
           </button>
 
           {showSort && (
             <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setShowSort(false)}
-              />
-              <div className="absolute right-0 top-12 z-20 w-44 bg-card border border-border rounded-xl shadow-xl shadow-black/30 overflow-hidden animate-fade-in">
+              <div className="fixed inset-0 z-10" onClick={() => setShowSort(false)} />
+              <div className="absolute right-0 top-13 z-20 w-48 bg-card/80 backdrop-blur-xl border border-border/40 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 {SORT_OPTIONS.map(opt => (
                   <button
                     key={opt.value}
                     onClick={() => handleSort(opt.value)}
                     className={cn(
-                      'w-full text-left px-4 py-2.5 text-sm transition-colors',
+                      'w-full text-left px-5 py-3 text-xs font-bold uppercase tracking-widest transition-colors',
                       activeSort === opt.value
-                        ? 'bg-primary/10 text-primary font-medium'
-                        : 'text-foreground hover:bg-secondary'
+                        ? 'bg-primary/20 text-primary'
+                        : 'text-foreground/70 hover:bg-white/5'
                     )}
                   >
                     {opt.label}
@@ -139,8 +135,8 @@ export function SearchFilter({ onSearch, onFilter, onSort }) {
       </div>
 
       {/* Priority filter chips + clear */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs text-muted-foreground font-medium shrink-0">Filter:</span>
+      <div className="flex items-center gap-2.5 flex-wrap px-1">
+        <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-60 shrink-0">Filter:</span>
         {PRIORITIES.map(p => {
           const active = activePriorities.includes(p)
           return (
@@ -149,11 +145,11 @@ export function SearchFilter({ onSearch, onFilter, onSort }) {
               id={`filter-priority-${p.toLowerCase()}`}
               onClick={() => togglePriority(p)}
               className={cn(
-                'text-xs px-2.5 py-1 rounded-full border font-medium transition-all duration-150',
+                'text-[10px] px-3 py-1 rounded-full border font-black uppercase tracking-widest transition-all duration-200',
                 active ? priorityActiveColor[p] : priorityColor[p]
               )}
             >
-              {priorityEmoji[p]} {p}
+              {p}
             </button>
           )
         })}
@@ -161,9 +157,9 @@ export function SearchFilter({ onSearch, onFilter, onSort }) {
         {hasFilters && (
           <button
             onClick={clearAll}
-            className="text-xs px-2.5 py-1 rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-border/80 transition-all duration-150 flex items-center gap-1"
+            className="text-[10px] px-3 py-1 rounded-full border border-border/40 text-muted-foreground/60 hover:text-foreground hover:border-primary/40 transition-all duration-200 flex items-center gap-1 font-black uppercase tracking-widest"
           >
-            <X className="h-2.5 w-2.5" /> Reset
+            <X className="h-3 w-3" /> Reset
           </button>
         )}
       </div>

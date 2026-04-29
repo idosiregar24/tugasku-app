@@ -1,144 +1,74 @@
 import { Link } from 'react-router-dom'
-import { LogOut, LayoutDashboard, Zap, Crown, Sparkles, Sun, Moon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { LogOut, LayoutDashboard, Zap, Crown, Sun, Moon } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 import { cn } from '@/lib/utils'
 import { NotificationPanel } from '@/components/layout/NotificationPanel'
 
-/**
- * Sticky top navigation bar dengan info user, plan indicator, dan avatar profil
- */
 export function Navbar({ user, onSignOut, todoCount, freeLimit, isPro, onUpgrade, onOpenProfile, notifications = [], onOpenDetail }) {
   const { isDark, toggleTheme } = useTheme()
-  const percentage = Math.min((todoCount / freeLimit) * 100, 100)
-  const isNearLimit = percentage >= 80
-  const isAtLimit   = percentage >= 100
-  const initials    = user?.email?.[0]?.toUpperCase() ?? '?'
+  const pct   = Math.min((todoCount / freeLimit) * 100, 100)
+  const isNear = pct >= 80
+  const initials = user?.email?.[0]?.toUpperCase() ?? '?'
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 w-full glass-nav border-b border-border/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-4">
 
-          {/* ── Brand ── */}
+          {/* Brand */}
           <div className="flex items-center gap-2.5 shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center">
-              <LayoutDashboard className="h-4 w-4 text-primary" />
+            <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
+              <LayoutDashboard className="h-4 w-4 text-white" />
             </div>
-            <div className="flex flex-col -space-y-1">
-              <span className="hidden sm:inline text-lg font-bold bg-gradient-to-r from-primary via-violet-400 to-purple-300 bg-clip-text text-transparent">
-                Tugasku
-              </span>
-              <span className="text-[10px] font-medium text-muted-foreground/60 tracking-wider">
-                v2.0.0
-              </span>
-            </div>
+            <span className="hidden sm:block text-[15px] font-black tracking-[-0.03em] text-gradient-purple uppercase">Tugasku</span>
           </div>
 
-          {/* ── Center: Plan indicator ── */}
+          {/* Center */}
           <div className="hidden sm:flex items-center gap-3">
             {isPro ? (
-              <div className="flex items-center gap-2 bg-amber-400/10 rounded-full px-3 py-1.5 border border-amber-400/25">
-                <Crown className="h-3.5 w-3.5 text-amber-400" />
-                <span className="text-xs font-semibold text-amber-400">Pro Plan Aktif</span>
-                <Sparkles className="h-3 w-3 text-amber-400/70" />
+              <div className="flex items-center gap-1.5 glass rounded-full px-3.5 py-1.5 border-yellow-400/20 shadow-sm">
+                <Crown className="h-3 w-3 text-yellow-400" />
+                <span className="text-[10px] font-black text-yellow-400 uppercase tracking-widest">Pro Plan</span>
               </div>
             ) : (
-              <div className="flex items-center gap-2.5 bg-secondary/60 rounded-full px-3 py-1.5 border border-border">
-                <Zap className={cn('h-3 w-3', isAtLimit ? 'text-red-400' : isNearLimit ? 'text-amber-400' : 'text-primary')} />
-                <span className="text-xs text-muted-foreground">
-                  <span className={cn('font-semibold', isAtLimit ? 'text-red-400' : isNearLimit ? 'text-amber-400' : 'text-foreground')}>
-                    {todoCount}
-                  </span>
-                  /{freeLimit} tugas aktif
+              <div className="flex items-center gap-2.5 glass rounded-full px-3.5 py-1.5 border-border/40">
+                <Zap className={cn('h-3.5 w-3.5', isNear ? 'text-orange-400' : 'text-primary')} />
+                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">
+                  <span className={cn(isNear ? 'text-orange-400' : 'text-foreground')}>{todoCount}</span>/{freeLimit}
                 </span>
-                <div className="w-20 h-1.5 rounded-full bg-background overflow-hidden">
-                  <div
-                    className={cn(
-                      'h-full rounded-full transition-all duration-700',
-                      isAtLimit ? 'bg-red-500' : isNearLimit ? 'bg-amber-400' : 'bg-primary'
-                    )}
-                    style={{ width: `${percentage}%` }}
-                  />
+                <div className="w-16 h-1.5 rounded-full bg-secondary/50 overflow-hidden">
+                  <div className={cn('h-full rounded-full transition-all duration-700', isNear ? 'bg-orange-400' : 'bg-primary')} style={{ width: `${pct}%` }} />
                 </div>
               </div>
             )}
-
-            {/* Upgrade button for free users */}
             {!isPro && (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={onUpgrade}
-                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400/15 to-orange-400/15 text-amber-400 border border-amber-400/25 hover:from-amber-400/25 hover:to-orange-400/25 transition-all duration-200"
-                >
-                  <Crown className="h-3 w-3" />
-                  Upgrade Pro
-                </button>
-                <Link
-                  to="/pricing"
-                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Lihat Harga
-                </Link>
-              </div>
+              <button onClick={onUpgrade} className="text-[10px] font-black text-primary hover:opacity-70 transition-opacity uppercase tracking-widest px-2">
+                Upgrade Pro
+              </button>
             )}
           </div>
 
-          {/* ── Right: Theme toggle + Avatar + Logout ── */}
+          {/* Right */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Notification Panel */}
-            <NotificationPanel
-              notifications={notifications}
-              onOpenDetail={onOpenDetail ?? (() => {})}
-            />
-
-            {/* Theme toggle */}
-            <button
-              id="theme-toggle-btn"
-              onClick={toggleTheme}
-              title={isDark ? 'Ganti ke mode terang' : 'Ganti ke mode gelap'}
-              className={cn(
-                'w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-all duration-200',
-                'border border-border hover:border-primary/40',
-                'bg-secondary hover:bg-secondary/80 active:scale-95',
-                'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {isDark
-                ? <Sun className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-400" />
-                : <Moon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-              }
+            <NotificationPanel notifications={notifications} onOpenDetail={onOpenDetail ?? (() => {})} />
+            <button onClick={toggleTheme}
+              className="w-10 h-10 rounded-2xl glass flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:border-primary/30 transition-all">
+              {isDark ? <Sun className="h-4.5 w-4.5 text-yellow-400" /> : <Moon className="h-4.5 w-4.5 text-primary" />}
             </button>
-            {/* Avatar — opens ProfileModal */}
-            <button
-              id="open-profile-btn"
-              onClick={onOpenProfile}
-              className={cn(
-                'w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center font-bold text-xs sm:text-sm transition-all duration-200',
-                'bg-gradient-to-br from-primary to-violet-400 text-white shadow-md shadow-primary/20',
-                'hover:scale-105 hover:shadow-lg hover:shadow-primary/30 active:scale-95',
-                'relative'
-              )}
-              title="Lihat profil"
-            >
+            <button onClick={onOpenProfile}
+              className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center font-black text-sm text-white shadow-lg shadow-primary/30 hover:opacity-90 active:scale-95 transition-all relative">
               {initials}
               {isPro && (
-                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-amber-400 border-2 border-background flex items-center justify-center">
-                  <Crown className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-white" />
+                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-yellow-400 border-2 border-background flex items-center justify-center">
+                  <Crown className="h-2 w-2 text-black" />
                 </span>
               )}
             </button>
-
-            <Button
-              id="logout-btn"
-              variant="outline"
-              size="sm"
-              onClick={onSignOut}
-              className="flex items-center gap-1.5 h-9"
-            >
+            <button onClick={onSignOut}
+              className="flex items-center gap-2 h-10 px-4 rounded-2xl glass text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 hover:text-foreground hover:border-red-400/40 transition-all">
               <LogOut className="h-3.5 w-3.5" />
               <span className="hidden md:inline">Keluar</span>
-            </Button>
+            </button>
           </div>
         </div>
       </div>

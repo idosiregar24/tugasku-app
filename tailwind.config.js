@@ -55,7 +55,7 @@ export default {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         'fade-in': {
@@ -66,10 +66,15 @@ export default {
           '0%': { opacity: '0', transform: 'scale(0.96)' },
           '100%': { opacity: '1', transform: 'scale(1)' },
         },
+        spotlight: {
+          "0%": { opacity: 0, transform: "translate(-72%, -62%) scale(0.5)" },
+          "100%": { opacity: 1, transform: "translate(-50%,-40%) scale(1)" },
+        },
       },
       animation: {
         'fade-in': 'fade-in 0.25s ease-out',
         'scale-in': 'scale-in 0.2s ease-out',
+        spotlight: "spotlight 2s ease .75s 1 forwards",
       },
     },
   },

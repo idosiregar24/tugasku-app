@@ -1,10 +1,12 @@
 import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
+import { motion } from 'framer-motion'
 import { format, differenceInDays, parseISO } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
 import { Trash2, GripVertical, Clock, AlertTriangle, CalendarCheck } from 'lucide-react'
 import { priorityConfig } from '@/lib/constants'
 import { useState } from 'react'
+import { cn } from '@/lib/utils'
 
 function DeadlineLabel({ deadline }) {
   // Parse YYYY-MM-DD from Supabase date column
@@ -83,21 +85,19 @@ export function TaskCard({ task, onDelete, onOpenDetail, isOverlay = false }) {
   }
 
   return (
-    <div
+    <motion.div
       ref={isOverlay ? undefined : setNodeRef}
       style={style}
       onClick={() => !isOverlay && onOpenDetail && onOpenDetail(task)}
-      className={[
-        'group relative bg-card rounded-xl p-4 border border-border border-l-4',
+      whileHover={!isOverlay ? { y: -2, scale: 1.01 } : {}}
+      className={cn(
+        'group relative rounded-[24px] p-5 border interactive-card',
+        'bg-card/80 shadow-sm border-border/50 hover:border-primary/50 hover:shadow-lg',
         config.border,
-        'transition-all duration-200',
-        isDragging && !isOverlay
-          ? 'opacity-30 scale-[0.97] shadow-none'
-          : 'hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5',
-        isOverlay
-          ? 'shadow-2xl shadow-black/60 rotate-[1.5deg] scale-[1.04] ring-2 ring-primary/40 cursor-grabbing'
-          : 'cursor-pointer',
-      ].join(' ')}
+        'transition-all duration-300 backdrop-blur-xl',
+        isDragging && !isOverlay ? 'opacity-30 scale-[0.97]' : '',
+        isOverlay ? 'shadow-2xl shadow-black/60 scale-[1.05] cursor-grabbing border-primary/50' : 'cursor-pointer'
+      )}
     >
       <div className="flex items-start gap-2.5">
         {/* Drag handle — stopPropagation so card click (open modal) isn't triggered */}
@@ -116,27 +116,26 @@ export function TaskCard({ task, onDelete, onOpenDetail, isOverlay = false }) {
         {/* Card content */}
         <div className="flex-1 min-w-0">
           <p
-            className={`text-sm font-medium leading-snug ${
-              task.status === 'done'
+            className={`text-sm font-semibold leading-snug tracking-tight ${task.status === 'done'
                 ? 'line-through text-muted-foreground'
                 : 'text-foreground'
-            }`}
+              }`}
           >
             {task.title}
           </p>
-          <div className="mt-2.5 flex items-center gap-2 flex-wrap">
+          <div className="mt-3 flex items-center gap-2 flex-wrap">
             {/* Status badge if finished */}
             {task.status === 'finished' && (
-              <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md bg-amber-400/15 text-amber-400 border border-amber-400/20 font-bold uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-md bg-amber-400/15 text-amber-400 border border-amber-400/20 font-black uppercase tracking-widest">
                 <Clock className="w-2.5 h-2.5" />
                 Belum Submit
               </span>
             )}
             {/* Priority badge */}
             <span
-              className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium ${config.badge}`}
+              className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border font-bold uppercase tracking-wider ${config.badge}`}
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+              <span className={`w-1 h-1 rounded-full ${config.dot}`} />
               {task.priority}
             </span>
             {/* Deadline */}
@@ -168,6 +167,6 @@ export function TaskCard({ task, onDelete, onOpenDetail, isOverlay = false }) {
           </button>
         )}
       </div>
-    </div>
+    </motion.div>
   )
 }

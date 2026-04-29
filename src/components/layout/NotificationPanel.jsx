@@ -87,7 +87,7 @@ export function NotificationPanel({ notifications = [], onOpenDetail }) {
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute right-0 top-12 z-50 w-80 sm:w-96 bg-card border border-border rounded-2xl shadow-2xl shadow-black/40 overflow-hidden animate-fade-in">
+        <div className="fixed inset-x-4 top-20 sm:absolute sm:inset-auto sm:right-0 sm:top-12 z-50 sm:w-96 max-w-sm mx-auto sm:mx-0 bg-card border border-border rounded-2xl shadow-2xl shadow-black/40 overflow-hidden animate-fade-in">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <div className="flex items-center gap-2">

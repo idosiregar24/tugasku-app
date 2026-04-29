@@ -1,20 +1,23 @@
 import { useDroppable } from '@dnd-kit/core'
 import { TaskCard } from './TaskCard'
+import { TaskStack } from './TaskStack'
+import { Inbox, ListTodo, Hourglass, CheckCircle2 } from 'lucide-react'
 
 /**
  * A droppable Kanban column
- * @param {{ id: 'todo' | 'finished' | 'done', title: string, tasks: import('@/types').Task[], onDelete: Function, onOpenDetail: Function, emptyMessage: string }} props
+ * @param {{ id: 'todo' | 'finished' | 'done', title: string, tasks: import('@/types').Task[], onDelete: Function, onOpenDetail: Function, emptyMessage: string, className?: string }} props
  */
-export function TaskColumn({ id, title, tasks, onDelete, onOpenDetail, emptyMessage }) {
+export function TaskColumn({ id, title, tasks, onDelete, onOpenDetail, emptyMessage, className }) {
   const { setNodeRef, isOver } = useDroppable({ id })
 
   const isTodo = id === 'todo'
   const isFinished = id === 'finished'
+  const isDone = id === 'done'
 
   const getStatusColor = () => {
-    if (isTodo) return 'bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.6)]'
-    if (isFinished) return 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]'
-    return 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]'
+    if (isTodo) return 'bg-primary'
+    if (isFinished) return 'bg-amber-400'
+    return 'bg-emerald-500'
   }
 
   const getBadgeStyle = () => {
@@ -24,51 +27,55 @@ export function TaskColumn({ id, title, tasks, onDelete, onOpenDetail, emptyMess
   }
 
   const getOverStyle = () => {
-    if (!isOver) return 'border-border/40 bg-secondary/10'
-    if (isTodo) return 'border-primary/70 bg-primary/5 shadow-inner shadow-primary/5'
-    if (isFinished) return 'border-amber-400/70 bg-amber-400/5 shadow-inner shadow-amber-400/5'
-    return 'border-green-400/70 bg-green-400/5 shadow-inner shadow-green-400/5'
+    if (!isOver) return 'bg-card/40 backdrop-blur-2xl border-border/40 shadow-sm'
+    if (isTodo) return 'border-primary/50 bg-primary/5 backdrop-blur-xl'
+    if (isFinished) return 'border-amber-400/50 bg-amber-400/5 backdrop-blur-xl'
+    return 'border-emerald-500/50 bg-emerald-500/5 backdrop-blur-xl'
   }
 
   return (
-    <div className="flex flex-col min-h-0">
+    <div
+      ref={setNodeRef}
+      className={[
+        'flex flex-col rounded-xl border shadow-sm p-4 sm:p-6 transition-all duration-300 relative overflow-hidden',
+        getOverStyle(),
+        className
+      ].join(' ')}
+    >
       {/* Column header */}
-      <div className="flex items-center gap-2.5 mb-4 px-1">
-        <div className={`w-2.5 h-2.5 rounded-full ${getStatusColor()}`} />
-        <h2 className="font-semibold text-foreground">{title}</h2>
-        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${getBadgeStyle()}`}>
+      <div className="flex items-center gap-2.5 mb-6 relative shrink-0">
+        <div className={`w-3 h-3 rounded-full ${getStatusColor()}`} />
+        <h2 className="text-lg font-black text-foreground tracking-tight uppercase opacity-80">{title}</h2>
+        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${getBadgeStyle()}`}>
           {tasks.length}
         </span>
       </div>
 
-      {/* Droppable zone */}
-      <div
-        ref={setNodeRef}
-        className={[
-          'flex-1 min-h-[420px] rounded-2xl border-2 border-dashed p-3 transition-all duration-200',
-          getOverStyle(),
-        ].join(' ')}
-      >
+      {/* Droppable area content */}
+      <div className="flex-1 flex flex-col min-h-[300px]">
         {tasks.length === 0 ? (
           <div
-            className={`flex flex-col items-center justify-center h-36 gap-2 transition-opacity duration-200 ${
-              isOver ? 'opacity-100' : 'opacity-30'
-            }`}
+            className={`flex flex-col items-center justify-center h-48 gap-3 transition-opacity duration-300 ${isOver ? 'opacity-100' : 'opacity-40'
+              }`}
           >
-            <span className="text-4xl">
-              {isOver ? '📥' : isTodo ? '📋' : isFinished ? '⏳' : '✅'}
-            </span>
-            <p className="text-xs text-muted-foreground text-center max-w-[160px]">
+            <div className="text-muted-foreground/50">
+              {isOver ? <Inbox className="w-10 h-10" /> : isTodo ? <ListTodo className="w-10 h-10" /> : isFinished ? <Hourglass className="w-10 h-10" /> : <CheckCircle2 className="w-10 h-10" />}
+            </div>
+            <p className="text-[10px] font-bold text-muted-foreground/60 text-center max-w-[160px] leading-relaxed uppercase tracking-wider">
               {emptyMessage}
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {tasks.map((task) => (
-              <div key={task.id} className="animate-fade-in">
-                <TaskCard task={task} onDelete={onDelete} onOpenDetail={onOpenDetail} />
-              </div>
-            ))}
+          <div className="space-y-3.5">
+            {isDone ? (
+              <TaskStack tasks={tasks} onDelete={onDelete} onOpenDetail={onOpenDetail} />
+            ) : (
+              tasks.map((task) => (
+                <div key={task.id}>
+                  <TaskCard task={task} onDelete={onDelete} onOpenDetail={onOpenDetail} />
+                </div>
+              ))
+            )}
           </div>
         )}
       </div>

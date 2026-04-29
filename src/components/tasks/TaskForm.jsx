@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Loader2, Plus, Crown, Sparkles } from 'lucide-react'
 import { PRIORITIES } from '@/types'
 
-const priorityEmoji = { Low: '🔵', Medium: '🟡', High: '🔴' }
+const priorityColor = { Low: 'bg-blue-400', Medium: 'bg-yellow-400', High: 'bg-red-400' }
 const priorityDesc = { Low: 'Tidak mendesak', Medium: 'Perlu diperhatikan', High: 'Sangat mendesak' }
 
 /**
@@ -197,7 +197,7 @@ export function TaskForm({ onAdd, isLimitReached, todoCount, freeLimit, onClose 
                   {PRIORITIES.map((p) => (
                     <SelectItem key={p} value={p}>
                       <span className="flex items-center gap-2">
-                        <span>{priorityEmoji[p]}</span>
+                        <span className={`w-2 h-2 rounded-full ${priorityColor[p]}`} />
                         <span>{p}</span>
                         <span className="text-muted-foreground text-xs">— {priorityDesc[p]}</span>
                       </span>

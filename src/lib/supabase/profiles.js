@@ -82,3 +82,20 @@ export async function cancelPro(userId) {
   if (error) throw error
   return data
 }
+
+/**
+ * Update user profile
+ * @param {string} userId
+ * @param {object} updates
+ */
+export async function updateProfile(userId, updates) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', userId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}

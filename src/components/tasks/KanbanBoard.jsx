@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import {
   DndContext,
   DragOverlay,
@@ -53,31 +54,61 @@ export function KanbanBoard({ todoTasks, finishedTasks, doneTasks, onUpdateTask,
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-        <TaskColumn
-          id="todo"
-          title="Perlu Dikerjakan"
-          tasks={todoTasks}
-          onDelete={onDeleteTask}
-          onOpenDetail={onOpenDetail}
-          emptyMessage="Belum ada tugas. Klik tombol + untuk menambah!"
-        />
-        <TaskColumn
-          id="finished"
-          title="Belum Submit"
-          tasks={finishedTasks}
-          onDelete={onDeleteTask}
-          onOpenDetail={onOpenDetail}
-          emptyMessage="Tugas yang sudah selesai tapi belum dikumpulkan."
-        />
-        <TaskColumn
-          id="done"
-          title="Selesai"
-          tasks={doneTasks}
-          onDelete={onDeleteTask}
-          onOpenDetail={onOpenDetail}
-          emptyMessage="Drag tugas ke sini jika sudah benar-benar selesai!"
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[700px] lg:h-[800px]">
+        {/* LEFT COLUMN: TODO (Full Height) */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="h-full"
+        >
+          <TaskColumn
+            id="todo"
+            title="Perlu Dikerjakan"
+            tasks={todoTasks}
+            onDelete={onDeleteTask}
+            onOpenDetail={onOpenDetail}
+            emptyMessage="Belum ada tugas. Klik tombol + untuk menambah!"
+            className="h-full min-h-[600px] lg:min-h-0"
+          />
+        </motion.div>
+
+        {/* RIGHT COLUMNS: Finished (Top) and Done (Bottom) */}
+        <div className="flex flex-col gap-6 h-full">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="flex-1 min-h-[300px] lg:min-h-0"
+          >
+            <TaskColumn
+              id="finished"
+              title="Belum Submit"
+              tasks={finishedTasks}
+              onDelete={onDeleteTask}
+              onOpenDetail={onOpenDetail}
+              emptyMessage="Belum ada tugas."
+              className="h-full"
+            />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="flex-1 min-h-[300px] lg:min-h-0"
+          >
+            <TaskColumn
+              id="done"
+              title="Selesai"
+              tasks={doneTasks}
+              onDelete={onDeleteTask}
+              onOpenDetail={onOpenDetail}
+              emptyMessage="Tarik tugas ke sini!"
+              className="h-full"
+            />
+          </motion.div>
+        </div>
       </div>
 
       {/* Floating drag preview */}

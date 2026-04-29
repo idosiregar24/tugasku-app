@@ -222,16 +222,16 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
                     }`}
                   >
                     {task.status === 'done'
-                      ? '✅ Selesai (Submit)'
+                      ? 'Selesai (Submit)'
                       : task.status === 'finished'
-                      ? '⏳ Selesai (Belum Submit)'
-                      : '📝 Dikerjakan'}
+                      ? 'Selesai (Belum Submit)'
+                      : 'Dikerjakan'}
                   </span>
                   {/* Priority badge */}
                   <span
-                    className={`text-[10px] sm:text-xs px-2 py-0.5 rounded-full border font-medium whitespace-nowrap ${config.badge}`}
+                    className={`text-[10px] sm:text-xs px-2 py-0.5 rounded-full border font-medium whitespace-nowrap flex items-center gap-1.5 ${config.badge}`}
                   >
-                    <span className="mr-1">{config.emoji}</span>
+                    <div className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
                     {task.priority}
                   </span>
                 </div>
