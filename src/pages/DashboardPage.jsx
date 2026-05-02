@@ -15,6 +15,7 @@ import { UpgradeModal } from '@/components/subscription/UpgradeModal'
 import { ProfileModal } from '@/components/profile/ProfileModal'
 import { NotificationPanel } from '@/components/layout/NotificationPanel'
 import { ScheduleView } from '@/components/tasks/ScheduleView'
+import { DeveloperModal } from '@/components/layout/DeveloperModal'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -82,6 +83,7 @@ export function DashboardPage() {
   const [bgImage, setBgImage] = useState(() => localStorage.getItem('tugasku-bg') || 'bg-slate-900')
   const [showStats, setShowStats] = useState(true)
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [developerOpen, setDeveloperOpen] = useState(false)
 
   // Editable Quote State
   const [isEditingQuote, setIsEditingQuote] = useState(false)
@@ -226,6 +228,7 @@ export function DashboardPage() {
         isAdmin={profile?.is_admin}
         user={user}
         onOpenProfile={() => setProfileOpen(true)}
+        onOpenDeveloper={() => setDeveloperOpen(true)}
         onSignOut={signOut}
       />
 
@@ -549,6 +552,7 @@ export function DashboardPage() {
 
       <TaskDetailModal task={selectedTask} open={!!selectedTask} onClose={handleCloseDetail} onUpdate={updateTask} onDelete={deleteTask} />
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} user={user} />
+      <DeveloperModal open={developerOpen} onClose={() => setDeveloperOpen(false)} />
       <ProfileModal
         open={profileOpen}
         onClose={() => setProfileOpen(false)}

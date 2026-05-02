@@ -13,13 +13,14 @@ import {
   Sun,
   Moon,
   ShieldCheck,
-  Clock
+  Clock,
+  Code2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/hooks/useTheme'
 import { useNavigate } from 'react-router-dom'
 
-export function Sidebar({ activeTab, onTabChange, isPro, isAdmin, user, onOpenProfile, onSignOut }) {
+export function Sidebar({ activeTab, onTabChange, isPro, isAdmin, user, onOpenProfile, onSignOut, onOpenDeveloper }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
@@ -166,6 +167,23 @@ export function Sidebar({ activeTab, onTabChange, isPro, isAdmin, user, onOpenPr
                 className="text-sm font-bold whitespace-nowrap"
               >
                 {isDark ? 'Light Mode' : 'Dark Mode'}
+              </motion.span>
+            )}
+          </button>
+
+          {/* Developer Link */}
+          <button 
+            onClick={onOpenDeveloper}
+            className="flex items-center gap-3 px-3 py-3 rounded-2xl text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all group"
+          >
+            <Code2 className="w-5 h-5 shrink-0" />
+            {!isCollapsed && (
+              <motion.span 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-sm font-bold whitespace-nowrap"
+              >
+                Developer
               </motion.span>
             )}
           </button>

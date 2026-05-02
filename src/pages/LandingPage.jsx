@@ -8,6 +8,7 @@ import { Spotlight } from '@/components/ui/spotlight'
 import { BackgroundBeams } from '@/components/ui/background-beams'
 import { Card3D } from '@/components/ui/card-3d.jsx'
 import { useScroll, useTransform, useSpring } from 'framer-motion'
+import { DeveloperModal } from '@/components/layout/DeveloperModal'
 
 const FEATURES = [
   { icon: LayoutDashboard, title: 'Kanban Board', desc: 'Drag & drop tugas antar kolom secara visual dan intuitif.', color: 'text-violet-400', bg: 'bg-violet-400/10' },
@@ -71,6 +72,7 @@ function MagneticButton({ children, className, id }) {
 export function LandingPage() {
   const { isDark, toggleTheme } = useTheme()
   const [mousePos, setMousePos] = useState({ x: -500, y: -500 })
+  const [devOpen, setDevOpen] = useState(false)
   const { scrollY } = useScroll()
 
   const y1 = useTransform(scrollY, [0, 500], [0, 100])
@@ -431,10 +433,17 @@ export function LandingPage() {
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground/40">
             <Code2 className="h-3 w-3" />
             <span>by</span>
-            <a href="mailto:Idosiregar2006@gmail.com" className="hover:text-primary transition-colors font-medium">Ido Refael Siregar</a>
+            <button 
+              onClick={() => setDevOpen(true)}
+              className="hover:text-primary transition-colors font-medium"
+            >
+              Ido Refael Siregar
+            </button>
           </div>
         </div>
       </footer>
+
+      <DeveloperModal open={devOpen} onClose={() => setDevOpen(false)} />
     </div>
   )
 }
