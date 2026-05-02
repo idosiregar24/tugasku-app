@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { motion } from 'framer-motion'
+import { cn } from '@/lib/utils'
 import { PRIORITIES } from '@/types'
 
 const priorityColor = { Low: 'bg-blue-400', Medium: 'bg-yellow-400', High: 'bg-red-400' }
