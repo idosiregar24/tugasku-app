@@ -2,6 +2,7 @@ import { useDroppable } from '@dnd-kit/core'
 import { TaskCard } from './TaskCard'
 import { TaskStack } from './TaskStack'
 import { Inbox, ListTodo, Hourglass, CheckCircle2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 /**
  * A droppable Kanban column
@@ -37,41 +38,44 @@ export function TaskColumn({ id, title, tasks, onDelete, onOpenDetail, emptyMess
     <div
       ref={setNodeRef}
       className={[
-        'flex flex-col rounded-xl border shadow-sm p-4 sm:p-6 transition-all duration-300 relative overflow-hidden',
-        getOverStyle(),
+        'flex flex-col rounded-[28px] border transition-all duration-700 relative overflow-hidden',
+        'bg-card/20 backdrop-blur-3xl border-white/10 dark:border-white/5 shadow-2xl shadow-black/5',
+        isOver ? 'ring-2 ring-primary/20 bg-primary/5' : '',
         className
       ].join(' ')}
     >
       {/* Column header */}
-      <div className="flex items-center gap-2.5 mb-6 relative shrink-0">
-        <div className={`w-3 h-3 rounded-full ${getStatusColor()}`} />
-        <h2 className="text-lg font-black text-foreground tracking-tight uppercase opacity-80">{title}</h2>
-        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${getBadgeStyle()}`}>
+      <div className="flex items-center justify-between px-6 pt-6 pb-4 relative shrink-0">
+        <div className="flex items-center gap-3">
+          <div className={cn("w-2 h-6 rounded-full shadow-lg", getStatusColor())} />
+          <h2 className="text-sm font-black text-foreground tracking-[0.15em] uppercase opacity-90">{title}</h2>
+        </div>
+        <span className={cn("text-[11px] font-black px-2.5 py-0.5 rounded-lg border backdrop-blur-md shadow-sm", getBadgeStyle())}>
           {tasks.length}
         </span>
       </div>
 
       {/* Droppable area content */}
-      <div className="flex-1 flex flex-col min-h-[300px]">
+      <div className="flex-1 flex flex-col min-h-[400px] px-4 pb-6">
         {tasks.length === 0 ? (
           <div
-            className={`flex flex-col items-center justify-center h-48 gap-3 transition-opacity duration-300 ${isOver ? 'opacity-100' : 'opacity-40'
+            className={`flex flex-col items-center justify-center h-64 gap-4 transition-opacity duration-500 ${isOver ? 'opacity-100' : 'opacity-20'
               }`}
           >
-            <div className="text-muted-foreground/50">
-              {isOver ? <Inbox className="w-10 h-10" /> : isTodo ? <ListTodo className="w-10 h-10" /> : isFinished ? <Hourglass className="w-10 h-10" /> : <CheckCircle2 className="w-10 h-10" />}
+            <div className="p-6 rounded-[32px] bg-white/5 border border-white/5">
+              {isOver ? <Inbox className="w-12 h-12 text-primary" /> : isTodo ? <ListTodo className="w-12 h-12" /> : isFinished ? <Hourglass className="w-12 h-12" /> : <CheckCircle2 className="w-12 h-12" />}
             </div>
-            <p className="text-[10px] font-bold text-muted-foreground/60 text-center max-w-[160px] leading-relaxed uppercase tracking-wider">
+            <p className="text-[11px] font-black text-muted-foreground/40 text-center max-w-[180px] leading-relaxed uppercase tracking-[0.2em]">
               {emptyMessage}
             </p>
           </div>
         ) : (
-          <div className="space-y-3.5">
+          <div className="space-y-4">
             {isDone ? (
               <TaskStack tasks={tasks} onDelete={onDelete} onOpenDetail={onOpenDetail} />
             ) : (
               tasks.map((task) => (
-                <div key={task.id}>
+                <div key={task.id} className="animate-fade-in">
                   <TaskCard task={task} onDelete={onDelete} onOpenDetail={onOpenDetail} />
                 </div>
               ))

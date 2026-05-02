@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Dialog,
   DialogContent,
@@ -22,6 +23,7 @@ import {
   ShieldCheck,
   ExternalLink,
   X,
+  MessageCircle
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
@@ -29,6 +31,7 @@ import { getMyPaymentHistory } from '@/lib/supabase/payments'
 import { cancelPro as apiCancelPro } from '@/lib/supabase/profiles'
 import { useNavigate } from 'react-router-dom'
 import { PRO_PRICE_MONTHLY, PRO_PRICE_ANNUAL } from '@/hooks/useProfile'
+import { cn } from '@/lib/utils'
 
 function formatRp(amount) {
   return new Intl.NumberFormat('id-ID', {
@@ -67,6 +70,7 @@ export function ProfileModal({ open, onClose, user, profile, pendingPayment, isP
   const [historyLoading, setHistoryLoading] = useState(false)
   const [cancelStep, setCancelStep] = useState(0) // 0: idle, 1: confirm, 2: loading, 3: done
   const [cancelError, setCancelError] = useState('')
+  const [activeTab, setActiveTab] = useState('profile') // 'profile', 'billing'
 
   // Fetch payment history when modal opens
   useEffect(() => {
@@ -111,250 +115,194 @@ export function ProfileModal({ open, onClose, user, profile, pendingPayment, isP
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden gap-0">
 
-        {/* ── Avatar + Header ── */}
-        <div className="relative px-6 pt-6 pb-5 bg-gradient-to-br from-primary/8 to-violet-500/5 border-b border-border">
-          <DialogHeader>
-            <div className="flex items-start gap-4">
-              {/* Avatar circle */}
-              <div className="relative shrink-0">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-violet-400 flex items-center justify-center shadow-lg shadow-primary/20">
-                  <span className="text-xl font-bold text-white">{initials}</span>
-                </div>
-                {isPro && (
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-amber-400 border-2 border-background flex items-center justify-center">
-                    <Crown className="h-2.5 w-2.5 text-white" />
-                  </div>
-                )}
-              </div>
-
-              <div className="flex-1 min-w-0 pt-0.5">
-                <DialogTitle className="text-base font-bold text-foreground truncate">
-                  {user?.email}
-                </DialogTitle>
-                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                  {/* Plan badge */}
-                  {isPro ? (
-                    <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-amber-400/15 text-amber-400 border border-amber-400/30 font-semibold">
-                      <Crown className="h-3 w-3" /> Pro
-                    </span>
-                  ) : pendingPayment ? (
-                    <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-orange-400/15 text-orange-400 border border-orange-400/30 font-semibold">
-                      <Clock className="h-3 w-3" /> Menunggu Verifikasi
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border font-medium">
-                      <Zap className="h-3 w-3" /> Free
-                    </span>
-                  )}
-                  {profile?.is_admin && (
-                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/25 font-medium">
-                      <ShieldCheck className="h-3 w-3" /> Admin
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1.5">
-                  Member sejak {memberSince}
-                </p>
-              </div>
-            </div>
-          </DialogHeader>
+        {/* ── Tabs Navigation ── */}
+        <div className="flex border-b border-border px-6">
+          <button 
+            onClick={() => setActiveTab('profile')}
+            className={cn(
+              "px-4 py-3 text-xs font-black uppercase tracking-[0.15em] transition-all relative",
+              activeTab === 'profile' ? "text-primary" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Account & Plan
+            {activeTab === 'profile' && <motion.div layoutId="tab-line" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+          </button>
+          <button 
+            onClick={() => setActiveTab('billing')}
+            className={cn(
+              "px-4 py-3 text-xs font-black uppercase tracking-[0.15em] transition-all relative",
+              activeTab === 'billing' ? "text-primary" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Billing History
+            {activeTab === 'billing' && <motion.div layoutId="tab-line" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+          </button>
         </div>
 
-        <div className="max-h-[65vh] overflow-y-auto">
-
-          {/* ── Plan Details ── */}
-          <div className="px-6 py-5 border-b border-border space-y-3">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
-              Detail Langganan
-            </p>
-
-            {isPro ? (
-              <>
-                {/* Pro plan info cards */}
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div className="p-3 bg-secondary rounded-xl border border-border">
-                    <p className="text-xs text-muted-foreground mb-1">Plan</p>
-                    <p className="text-sm font-semibold text-amber-400 flex items-center gap-1">
-                      <Crown className="h-3.5 w-3.5" /> Pro · {billingCycle}
-                    </p>
-                  </div>
-                  <div className="p-3 bg-secondary rounded-xl border border-border">
-                    <p className="text-xs text-muted-foreground mb-1">Harga</p>
-                    <p className="text-sm font-semibold text-foreground">{formatRp(planPrice)}</p>
-                  </div>
-                  <div className="col-span-2 p-3 bg-secondary rounded-xl border border-border flex items-center gap-2">
-                    <CalendarCheck className="h-4 w-4 text-primary shrink-0" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Berlaku hingga</p>
-                      <p className="text-sm font-semibold text-foreground">{nextRenewal ?? '—'}</p>
-                    </div>
-                  </div>
+        <div className="max-h-[60vh] overflow-y-auto p-6">
+          {activeTab === 'profile' ? (
+            <div className="space-y-6">
+              {/* Profile Overview */}
+              <div className="flex items-center gap-4 p-4 rounded-3xl bg-secondary/30 border border-border/50">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-violet-500 flex items-center justify-center text-2xl font-black text-white shadow-xl shadow-primary/20">
+                  {initials}
                 </div>
-
-                {/* Cancel flow */}
-                {cancelStep === 0 && (
-                  <button
-                    onClick={() => setCancelStep(1)}
-                    className="text-xs text-red-400 hover:text-red-300 transition-colors underline underline-offset-2 mt-1"
-                  >
-                    Batalkan langganan Pro
-                  </button>
-                )}
-
-                {cancelStep === 1 && (
-                  <div className="p-3.5 rounded-xl bg-red-400/8 border border-red-400/20 space-y-3">
-                    <div className="flex items-start gap-2">
-                      <AlertTriangle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-semibold text-red-400">Batalkan langganan Pro?</p>
-                        <p className="text-xs text-red-400/70 mt-1">
-                          Akun akan kembali ke plan Free setelah pembatalan. Tugas yang sudah ada tidak akan hilang.
-                        </p>
-                      </div>
-                    </div>
-                    {cancelError && (
-                      <p className="text-xs text-red-400 font-medium">{cancelError}</p>
-                    )}
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="ghost" onClick={() => setCancelStep(0)} className="flex-1">
-                        Tidak, Tetap Pro
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="flex-1 bg-red-500 hover:bg-red-600 text-white"
-                        onClick={handleCancelPro}
-                      >
-                        Ya, Batalkan
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {cancelStep === 2 && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Membatalkan langganan...
-                  </div>
-                )}
-
-                {cancelStep === 3 && (
-                  <div className="p-3 rounded-xl bg-secondary border border-border flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-400 shrink-0" />
-                    <p className="text-xs text-muted-foreground">
-                      Langganan dibatalkan. Plan kembali ke Free.
-                    </p>
-                  </div>
-                )}
-              </>
-            ) : pendingPayment ? (
-              /* Pending payment info */
-              <div className="p-4 rounded-xl bg-orange-400/8 border border-orange-400/20 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-orange-400 shrink-0" />
-                  <p className="text-sm font-semibold text-orange-400">Pembayaran Menunggu Verifikasi</p>
+                <div>
+                  <h3 className="text-sm font-black text-foreground">{user?.email}</h3>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Member since {memberSince}</p>
                 </div>
-                <p className="text-xs text-orange-400/70">
-                  Pembayaran {formatRp(pendingPayment.amount)} via{' '}
-                  <span className="capitalize">{pendingPayment.payment_method}</span>{' '}
-                  pada {fmtDate(pendingPayment.created_at)} sedang diverifikasi admin.
-                </p>
-                <p className="text-xs text-orange-400/70">
-                  Estimasi aktivasi: <strong className="text-orange-400">1×24 jam</strong>
-                </p>
-                <a
-                  href="https://wa.me/6281363554262"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-1 inline-flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-300 underline"
-                >
-                  <ExternalLink className="h-3 w-3" /> Hubungi admin via WhatsApp
-                </a>
               </div>
-            ) : (
-              /* Free plan — show upgrade CTA */
+
+              {/* Plan Section */}
               <div className="space-y-3">
-                <div className="p-4 rounded-xl bg-secondary border border-border">
-                  <p className="text-sm font-medium text-foreground">Plan Gratis</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Maksimal 15 tugas aktif. Upgrade ke Pro untuk tugas tak terbatas.
-                  </p>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Current Plan</h4>
+                  {isPro ? (
+                    <span className="flex items-center gap-1.5 text-[10px] font-black text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-full border border-amber-400/20 uppercase tracking-widest">
+                      <Crown className="h-3 w-3" /> PRO ACCOUNT
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-black text-muted-foreground bg-secondary px-2.5 py-1 rounded-full border border-border uppercase tracking-widest">FREE PLAN</span>
+                  )}
                 </div>
-                <Button
-                  className="w-full bg-gradient-to-r from-primary to-violet-500 shadow-md shadow-primary/20"
-                  onClick={() => { handleClose(); onUpgrade?.() }}
-                >
-                  <Crown className="h-4 w-4 mr-2" />
-                  Upgrade ke Pro
-                </Button>
-              </div>
-            )}
-          </div>
 
-          {/* ── Payment History ── */}
-          <div className="px-6 py-5 border-b border-border">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold mb-3">
-              Riwayat Pembayaran
-            </p>
-
-            {historyLoading ? (
-              <div className="flex items-center gap-2 py-4 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-xs">Memuat riwayat...</span>
-              </div>
-            ) : history.length === 0 ? (
-              <div className="text-center py-6">
-                <Banknote className="h-8 w-8 mx-auto mb-2 text-muted-foreground/30" />
-                <p className="text-xs text-muted-foreground">Belum ada riwayat pembayaran</p>
-              </div>
-            ) : (
-              <div className="space-y-2.5">
-                {history.map((h) => (
-                  <div
-                    key={h.id}
-                    className="flex items-center justify-between gap-3 p-3 bg-secondary rounded-xl border border-border"
-                  >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-xs font-semibold text-foreground">
-                          {formatRp(h.amount)}
-                        </p>
-                        <p className="text-xs text-muted-foreground capitalize">{h.payment_method}</p>
-                        <p className="text-xs text-muted-foreground">
-                          · {h.billing_cycle === 'annual' ? 'Tahunan' : 'Bulanan'}
-                        </p>
+                {isPro ? (
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="p-4 bg-card/50 rounded-2xl border border-border/50 shadow-sm">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <p className="text-xs font-bold text-foreground">Pro {billingCycle}</p>
+                          <p className="text-lg font-black text-primary">{formatRp(planPrice)}</p>
+                        </div>
+                        <div className="p-3 bg-primary/10 rounded-xl">
+                          <Crown className="h-5 w-5 text-primary" />
+                        </div>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {fmtDate(h.created_at)}
+                      <div className="flex items-center gap-2 pt-4 border-t border-border/50 text-[11px] text-muted-foreground">
+                        <CalendarCheck className="h-4 w-4 text-primary" />
+                        <span>Renews on <strong className="text-foreground">{nextRenewal ?? '—'}</strong></span>
+                      </div>
+                    </div>
+
+                    {/* Cancel flow */}
+                    {cancelStep === 0 && (
+                      <button
+                        onClick={() => setCancelStep(1)}
+                        className="text-[10px] font-bold text-red-400/60 hover:text-red-400 uppercase tracking-widest transition-colors text-center w-full py-2"
+                      >
+                        Cancel Subscription
+                      </button>
+                    )}
+                    {cancelStep === 1 && (
+                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-2xl bg-red-400/5 border border-red-400/20 space-y-4">
+                        <div className="flex gap-3">
+                          <AlertTriangle className="h-5 w-5 text-red-400 shrink-0" />
+                          <div>
+                            <p className="text-sm font-bold text-red-400">Cancel Pro Plan?</p>
+                            <p className="text-[11px] text-red-400/70 mt-1 leading-relaxed">
+                              Your account will revert to Free after the current period. You'll lose Pro features but keep all your tasks.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="ghost" onClick={() => setCancelStep(0)} className="flex-1 text-[11px] font-black uppercase">Wait, Keep Pro</Button>
+                          <Button size="sm" className="flex-1 bg-red-500 hover:bg-red-600 text-white text-[11px] font-black uppercase" onClick={handleCancelPro}>Cancel Now</Button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+                ) : pendingPayment ? (
+                  <div className="p-6 rounded-[32px] bg-amber-400/5 border border-amber-400/20 text-center space-y-4 animate-pulse">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-400/20 flex items-center justify-center mx-auto border border-amber-400/30">
+                      <Clock className="h-6 w-6 text-amber-400" />
+                    </div>
+                    <div>
+                      <h5 className="text-base font-black text-amber-400 uppercase tracking-tight">Menunggu Verifikasi</h5>
+                      <p className="text-[11px] text-muted-foreground mt-2 max-w-[240px] mx-auto leading-relaxed">
+                        Pembayaran kamu sedang diproses oleh admin. Aktivasi manual dilakukan dalam <strong className="text-foreground">1x24 jam</strong>.
                       </p>
                     </div>
-                    <StatusBadge status={h.status} />
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-amber-400/30 text-amber-400 hover:bg-amber-400/10 text-[10px] font-black uppercase tracking-widest h-10"
+                      onClick={() => window.open('https://wa.me/6281363554262', '_blank')}
+                    >
+                      <MessageCircle className="w-3 h-3 mr-2" /> Hubungi Admin
+                    </Button>
                   </div>
-                ))}
+                ) : (
+                  <div className="p-6 rounded-[32px] bg-gradient-to-br from-primary/10 to-violet-500/10 border border-primary/20 text-center space-y-4">
+                    <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
+                      <Zap className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h5 className="text-base font-black text-foreground">Unlock Full Power</h5>
+                      <p className="text-xs text-muted-foreground mt-1 max-w-[200px] mx-auto">Get unlimited tasks, pro features, and priority support.</p>
+                    </div>
+                    <Button
+                      className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20"
+                      onClick={() => { handleClose(); onUpgrade?.() }}
+                    >
+                      Upgrade to Pro
+                    </Button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* ── Actions ── */}
-          <div className="px-6 py-5 space-y-2">
-            {profile?.is_admin && (
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-2 border-primary/30 text-primary hover:bg-primary/8"
-                onClick={() => { handleClose(); navigate('/admin') }}
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                Buka Admin Panel
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-2 text-destructive border-destructive/25 hover:bg-destructive/8"
-              onClick={() => { handleClose(); onSignOut?.() }}
-            >
-              <LogOut className="h-4 w-4" />
-              Keluar dari Akun
-            </Button>
-          </div>
+              {/* Sign Out */}
+              <div className="pt-4 border-t border-border/50">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-center gap-2 text-muted-foreground hover:text-destructive hover:bg-destructive/5 font-bold text-xs uppercase tracking-widest"
+                  onClick={() => { handleClose(); onSignOut?.() }}
+                >
+                  <LogOut className="h-4 w-4" /> Sign Out
+                </Button>
+              </div>
+            </div>
+          ) : (
+            /* Billing History Tab */
+            <div className="space-y-6">
+               <div className="flex items-center justify-between">
+                  <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Transaction History</h4>
+                  <Banknote className="h-4 w-4 text-muted-foreground/40" />
+                </div>
+
+                {historyLoading ? (
+                  <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Fetching data...</span>
+                  </div>
+                ) : history.length === 0 ? (
+                  <div className="text-center py-12 bg-secondary/20 rounded-[32px] border border-dashed border-border">
+                    <div className="w-12 h-12 rounded-full bg-muted/20 flex items-center justify-center mx-auto mb-4">
+                       <Banknote className="h-6 w-6 text-muted-foreground/30" />
+                    </div>
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">No payment history found</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {history.map((h) => (
+                      <div
+                        key={h.id}
+                        className="group flex items-center justify-between gap-4 p-4 bg-card/40 hover:bg-card/80 rounded-2xl border border-white/5 transition-all duration-300"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                             <p className="text-sm font-black text-foreground">{formatRp(h.amount)}</p>
+                             <span className="text-[10px] font-bold text-muted-foreground bg-secondary px-1.5 py-0.5 rounded uppercase tracking-tighter">{h.payment_method}</span>
+                          </div>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
+                            {fmtDate(h.created_at)} · {h.billing_cycle === 'annual' ? 'ANNUAL' : 'MONTHLY'}
+                          </p>
+                        </div>
+                        <StatusBadge status={h.status} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

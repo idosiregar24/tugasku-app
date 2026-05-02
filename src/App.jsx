@@ -5,6 +5,7 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { PricingPage } from '@/pages/PricingPage'
 import { AdminPage } from '@/pages/AdminPage'
 import { LandingPage } from '@/pages/LandingPage'
+import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
 import { useTheme } from '@/hooks/useTheme'
 
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/login"    element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/pricing"  element={<PricingPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route
           path="/dashboard"
           element={

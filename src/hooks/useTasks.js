@@ -138,10 +138,52 @@ export function useTasks(user, isPro = false) {
 
   // Update task with optimistic UI
   const handleUpdateTask = async (id, updates) => {
-    // If marking as finished or done, add completed_at timestamp
+    const existingTask = tasks.find(t => t.id === id)
     const finalUpdates = { ...updates }
-    if (updates.status === 'done' || updates.status === 'finished') {
-      if (!tasks.find(t => t.id === id)?.completed_at) {
+
+    // Logic Tugas Berulang (Recurring)
+    if (updates.status === 'done' && existingTask?.is_recurring) {
+      const period = existingTask.recurrence_period || 'daily'
+      const currentDeadline = parseISO(existingTask.deadline || new Date().toISOString())
+      let nextDeadline
+
+      if (period === 'daily') {
+        nextDeadline = addDays(currentDeadline, 1)
+      } else if (period === 'weekly') {
+        const selectedDays = existingTask.recurring_days ? existingTask.recurring_days.split(',').map(Number) : []
+        
+        if (selectedDays.length > 0) {
+          // Cari hari berikutnya dari daftar yang dipilih
+          const currentDay = getDay(currentDeadline)
+          // Sort selected days to find the next one
+          const sortedDays = [...selectedDays].sort((a, b) => a - b)
+          const nextDayIndex = sortedDays.find(d => d > currentDay)
+          
+          if (nextDayIndex !== undefined) {
+            // Hari berikutnya masih di minggu yang sama
+            const diff = nextDayIndex - currentDay
+            nextDeadline = addDays(currentDeadline, diff)
+          } else {
+            // Hari berikutnya ada di minggu depan (hari pertama dalam daftar)
+            const diff = 7 - currentDay + sortedDays[0]
+            nextDeadline = addDays(currentDeadline, diff)
+          }
+        } else {
+          nextDeadline = addWeeks(currentDeadline, 1)
+        }
+      } else if (period === 'monthly') {
+        nextDeadline = addMonths(currentDeadline, 1)
+      } else {
+        nextDeadline = addDays(currentDeadline, 1)
+      }
+
+      finalUpdates.deadline = formatDate(nextDeadline, 'yyyy-MM-dd')
+      finalUpdates.status = 'todo' // Reset ke todo untuk hari berikutnya
+      finalUpdates.completed_at = null
+      
+      console.log(`Recurring task "${existingTask.title}" moved to ${finalUpdates.deadline}`)
+    } else if (updates.status === 'done' || updates.status === 'finished') {
+      if (!existingTask?.completed_at) {
         finalUpdates.completed_at = new Date().toISOString()
       }
     } else if (updates.status === 'todo') {

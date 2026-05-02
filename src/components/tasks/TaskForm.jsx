@@ -10,7 +10,17 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2, Plus, Crown, Sparkles } from 'lucide-react'
+import { 
+  Loader2, 
+  Plus, 
+  Crown, 
+  Sparkles, 
+  RefreshCw, 
+  Repeat, 
+  Calendar as CalendarIcon 
+} from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import { motion } from 'framer-motion'
 import { PRIORITIES } from '@/types'
 
 const priorityColor = { Low: 'bg-blue-400', Medium: 'bg-yellow-400', High: 'bg-red-400' }
@@ -19,10 +29,21 @@ const priorityDesc = { Low: 'Tidak mendesak', Medium: 'Perlu diperhatikan', High
 /**
  * Form untuk menambah tugas baru, dengan logika SaaS limit dan multi-step wizard
  */
-export function TaskForm({ onAdd, isLimitReached, todoCount, freeLimit, onClose }) {
+export function TaskForm({ onAdd, isLimitReached, todoCount, freeLimit, onClose, defaultType = 'task' }) {
   const today = new Date().toISOString().split('T')[0]
   const [step, setStep] = useState(1)
-  const [form, setForm] = useState({ title: '', deadline: today, priority: 'Medium', notes: '' })
+  const [form, setForm] = useState({ 
+    title: '', 
+    deadline: today, 
+    priority: 'Medium', 
+    notes: '',
+    start_time: '',
+    end_time: '',
+    task_type: defaultType,
+    is_recurring: false,
+    recurrence_period: 'daily',
+    recurring_days: '' // format: "1,3,5" (Minggu=0, Senin=1, ...)
+  })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -137,8 +158,12 @@ export function TaskForm({ onAdd, isLimitReached, todoCount, freeLimit, onClose 
         {step === 1 && (
           <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-1">
-              <h3 className="text-sm font-semibold text-foreground">Langkah 1: Apa yang ingin kamu kerjakan?</h3>
-              <p className="text-xs text-muted-foreground">Berikan nama yang jelas untuk tugasmu.</p>
+              <h3 className="text-sm font-semibold text-foreground">
+                Langkah 1: {form.task_type === 'schedule' ? 'Apa agenda jadwalmu?' : 'Apa yang ingin kamu kerjakan?'}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                {form.task_type === 'schedule' ? 'Misal: Gym, Meeting, atau Belajar.' : 'Berikan nama yang jelas untuk tugasmu.'}
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="task-title">Nama Tugas <span className="text-destructive">*</span></Label>
@@ -164,15 +189,41 @@ export function TaskForm({ onAdd, isLimitReached, todoCount, freeLimit, onClose 
               <h3 className="text-sm font-semibold text-foreground">Langkah 2: Kapan deadline-nya?</h3>
               <p className="text-xs text-muted-foreground">Tentukan batas waktu penyelesaian tugas ini.</p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="task-deadline">Tanggal Deadline <span className="text-destructive">*</span></Label>
-              <Input
-                id="task-deadline"
-                type="date"
-                value={form.deadline}
-                onChange={(e) => setForm((p) => ({ ...p, deadline: e.target.value }))}
-                required
-              />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="task-deadline">Tanggal Deadline <span className="text-destructive">*</span></Label>
+                <Input
+                  id="task-deadline"
+                  type="date"
+                  value={form.deadline}
+                  onChange={(e) => setForm((p) => ({ ...p, deadline: e.target.value }))}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="task-start-time">Waktu Mulai (Opsional)</Label>
+                  <Input
+                    id="task-start-time"
+                    type="time"
+                    value={form.start_time}
+                    onChange={(e) => setForm((p) => ({ ...p, start_time: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="task-end-time">Waktu Selesai</Label>
+                  <Input
+                    id="task-end-time"
+                    type="time"
+                    value={form.end_time}
+                    onChange={(e) => setForm((p) => ({ ...p, end_time: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground italic">
+                Tips: Isi waktu jika ingin tugas ini muncul di jadwal harian (Schedule).
+              </p>
             </div>
           </div>
         )}
@@ -205,6 +256,84 @@ export function TaskForm({ onAdd, isLimitReached, todoCount, freeLimit, onClose 
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-4 pt-2 border-t border-border/50">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-bold flex items-center gap-2">
+                    <Repeat className="w-3.5 h-3.5 text-primary" /> Tugas Berulang
+                  </Label>
+                  <p className="text-[10px] text-muted-foreground">Aktifkan untuk agenda rutin</p>
+                </div>
+                <Switch 
+                  checked={form.is_recurring}
+                  onCheckedChange={(val) => setForm(p => ({ ...p, is_recurring: val }))}
+                />
+              </div>
+
+              {form.is_recurring && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="space-y-2 overflow-hidden"
+                >
+                  <Label htmlFor="recurrence-period" className="text-xs text-muted-foreground">Ulangi Setiap</Label>
+                  <Select
+                    value={form.recurrence_period}
+                    onValueChange={(val) => setForm(p => ({ ...p, recurrence_period: val }))}
+                  >
+                    <SelectTrigger id="recurrence-period" className="h-9 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">Harian (Setiap Hari)</SelectItem>
+                      <SelectItem value="weekly">Mingguan (Pilih Hari)</SelectItem>
+                      <SelectItem value="monthly">Bulanan (Setiap Bulan)</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {form.recurrence_period === 'weekly' && (
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="space-y-2 mt-3"
+                    >
+                      <Label className="text-[10px] text-muted-foreground uppercase font-bold">Pilih Hari</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { l: 'M', v: 0 }, { l: 'S', v: 1 }, { l: 'S', v: 2 }, 
+                          { l: 'R', v: 3 }, { l: 'K', v: 4 }, { l: 'J', v: 5 }, { l: 'S', v: 6 }
+                        ].map(day => {
+                          const daysArr = form.recurring_days ? form.recurring_days.split(',') : []
+                          const isActive = daysArr.includes(day.v.toString())
+                          
+                          return (
+                            <button
+                              key={day.v}
+                              type="button"
+                              onClick={() => {
+                                let newDays = isActive 
+                                  ? daysArr.filter(d => d !== day.v.toString())
+                                  : [...daysArr, day.v.toString()]
+                                setForm(p => ({ ...p, recurring_days: newDays.sort().join(',') }))
+                              }}
+                              className={cn(
+                                "w-8 h-8 rounded-full text-[10px] font-bold border transition-all",
+                                isActive 
+                                  ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" 
+                                  : "bg-white/5 border-white/10 text-muted-foreground hover:border-primary/50"
+                              )}
+                            >
+                              {day.l}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </motion.div>
+              )}
             </div>
 
             <div className="space-y-2">

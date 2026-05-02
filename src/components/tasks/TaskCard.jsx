@@ -89,16 +89,20 @@ export function TaskCard({ task, onDelete, onOpenDetail, isOverlay = false }) {
       ref={isOverlay ? undefined : setNodeRef}
       style={style}
       onClick={() => !isOverlay && onOpenDetail && onOpenDetail(task)}
-      whileHover={!isOverlay ? { y: -2, scale: 1.01 } : {}}
+      whileHover={!isOverlay ? { y: -4, scale: 1.02, rotate: 0.2 } : {}}
       className={cn(
-        'group relative rounded-[24px] p-5 border interactive-card',
-        'bg-card/80 shadow-sm border-border/50 hover:border-primary/50 hover:shadow-lg',
+        'group relative rounded-[20px] p-4 border transition-all duration-500',
+        'bg-card/40 backdrop-blur-xl border-white/10 dark:border-white/5',
+        'shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)]',
+        'hover:border-primary/40',
         config.border,
-        'transition-all duration-300 backdrop-blur-xl',
-        isDragging && !isOverlay ? 'opacity-30 scale-[0.97]' : '',
-        isOverlay ? 'shadow-2xl shadow-black/60 scale-[1.05] cursor-grabbing border-primary/50' : 'cursor-pointer'
+        isDragging && !isOverlay ? 'opacity-30 scale-[0.98]' : '',
+        isOverlay ? 'shadow-2xl shadow-black/60 scale-[1.05] cursor-grabbing border-primary/50 bg-card/90' : 'cursor-pointer'
       )}
     >
+      {/* Decorative Glow */}
+      <div className="absolute inset-0 rounded-[20px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" 
+        style={{ background: `radial-gradient(circle at top right, hsl(var(--primary) / 0.05), transparent 70%)` }} />
       <div className="flex items-start gap-2.5">
         {/* Drag handle — stopPropagation so card click (open modal) isn't triggered */}
         {!isOverlay && (

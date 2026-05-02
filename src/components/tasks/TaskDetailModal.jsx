@@ -31,7 +31,9 @@ import {
   Calendar,
   Info,
   Pencil,
+  Repeat,
 } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
 import { PRIORITIES } from '@/types'
 import { priorityConfig } from '@/lib/constants'
 
@@ -114,6 +116,11 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
         deadline: task.deadline,
         priority: task.priority,
         notes: task.notes || '',
+        start_time: task.start_time || '',
+        end_time: task.end_time || '',
+        is_recurring: task.is_recurring || false,
+        recurrence_period: task.recurrence_period || 'daily',
+        recurring_days: task.recurring_days || '',
       })
       setConfirmDelete(false)
     }
@@ -127,7 +134,12 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
     form.title !== task.title ||
     form.deadline !== task.deadline ||
     form.priority !== task.priority ||
-    form.notes !== (task.notes || '')
+    form.notes !== (task.notes || '') ||
+    form.start_time !== (task.start_time || '') ||
+    form.end_time !== (task.end_time || '') ||
+    form.is_recurring !== (task.is_recurring || false) ||
+    form.recurrence_period !== (task.recurrence_period || 'daily') ||
+    form.recurring_days !== (task.recurring_days || '')
 
   const createdAt = format(new Date(task.created_at), 'dd MMM yyyy, HH:mm', {
     locale: localeId,
@@ -142,6 +154,11 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
         deadline: form.deadline,
         priority: form.priority,
         notes: form.notes.trim(),
+        start_time: form.start_time,
+        end_time: form.end_time,
+        is_recurring: form.is_recurring,
+        recurrence_period: form.recurrence_period,
+        recurring_days: form.recurring_days,
       })
       onClose()
     } finally {
@@ -276,6 +293,34 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
             />
           </div>
 
+          {/* Edit: Time Range */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="detail-start-time" className="flex items-center gap-1.5 text-xs text-muted-foreground uppercase tracking-wide">
+                <Clock className="h-3 w-3" /> Waktu Mulai
+              </Label>
+              <Input
+                id="detail-start-time"
+                type="time"
+                value={form.start_time}
+                onChange={(e) => setForm((p) => ({ ...p, start_time: e.target.value }))}
+                className="text-sm"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="detail-end-time" className="flex items-center gap-1.5 text-xs text-muted-foreground uppercase tracking-wide">
+                <Clock className="h-3 w-3" /> Waktu Selesai
+              </Label>
+              <Input
+                id="detail-end-time"
+                type="time"
+                value={form.end_time}
+                onChange={(e) => setForm((p) => ({ ...p, end_time: e.target.value }))}
+                className="text-sm"
+              />
+            </div>
+          </div>
+
           {/* Edit: Priority */}
           <div className="space-y-1.5">
             <Label htmlFor="detail-priority" className="flex items-center gap-1.5 text-xs text-muted-foreground uppercase tracking-wide">
@@ -299,6 +344,77 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Edit: Recurring */}
+          <div className="p-4 rounded-2xl bg-secondary/50 border border-border space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-sm font-bold flex items-center gap-2">
+                  <Repeat className="w-3.5 h-3.5 text-primary" /> Tugas Berulang
+                </Label>
+                <p className="text-[10px] text-muted-foreground">Agenda ini akan otomatis muncul kembali</p>
+              </div>
+              <Switch 
+                checked={form.is_recurring}
+                onCheckedChange={(val) => setForm(p => ({ ...p, is_recurring: val }))}
+              />
+            </div>
+
+            {form.is_recurring && (
+              <div className="space-y-2">
+                <Label htmlFor="detail-recurrence" className="text-xs text-muted-foreground uppercase tracking-wide">Ulangi Setiap</Label>
+                <Select
+                  value={form.recurrence_period}
+                  onValueChange={(val) => setForm(p => ({ ...p, recurrence_period: val }))}
+                >
+                  <SelectTrigger id="detail-recurrence" className="h-9 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">Harian</SelectItem>
+                    <SelectItem value="weekly">Mingguan</SelectItem>
+                    <SelectItem value="monthly">Bulanan</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {form.recurrence_period === 'weekly' && (
+                  <div className="space-y-2 mt-2">
+                    <Label className="text-[10px] text-muted-foreground uppercase font-bold">Hari Jadwal</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { l: 'M', v: 0 }, { l: 'S', v: 1 }, { l: 'S', v: 2 }, 
+                        { l: 'R', v: 3 }, { l: 'K', v: 4 }, { l: 'J', v: 5 }, { l: 'S', v: 6 }
+                      ].map(day => {
+                        const daysArr = form.recurring_days ? form.recurring_days.split(',') : []
+                        const isActive = daysArr.includes(day.v.toString())
+                        
+                        return (
+                          <button
+                            key={day.v}
+                            type="button"
+                            onClick={() => {
+                              let newDays = isActive 
+                                ? daysArr.filter(d => d !== day.v.toString())
+                                : [...daysArr, day.v.toString()]
+                              setForm(p => ({ ...p, recurring_days: newDays.sort().join(',') }))
+                            }}
+                            className={cn(
+                              "w-7 h-7 rounded-full text-[10px] font-bold border transition-all",
+                              isActive 
+                                ? "bg-primary border-primary text-white" 
+                                : "bg-white/5 border-white/10 text-muted-foreground"
+                            )}
+                          >
+                            {day.l}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Edit: Notes */}
