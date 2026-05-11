@@ -108,6 +108,7 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
   const [deleting, setDeleting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [togglingStatus, setTogglingStatus] = useState(false)
+  const [error, setError] = useState('')
 
   // Sync form when task changes
   useEffect(() => {
@@ -149,19 +150,26 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
   const handleSave = async () => {
     if (!hasChanges || !form.title.trim()) return
     setSaving(true)
+    setError('')
     try {
-      await onUpdate(task.id, {
+      // Clean data: convert empty strings to null for optional DB fields
+      const updates = {
         title: form.title.trim(),
         deadline: form.deadline,
         priority: form.priority,
-        notes: form.notes.trim(),
-        start_time: form.start_time,
-        end_time: form.end_time,
+        notes: form.notes.trim() || null,
+        start_time: form.start_time || null,
+        end_time: form.end_time || null,
         is_recurring: form.is_recurring,
         recurrence_period: form.recurrence_period,
-        recurring_days: form.recurring_days,
-      })
+        recurring_days: form.recurring_days || null,
+      }
+      
+      await onUpdate(task.id, updates)
       onClose()
+    } catch (err) {
+      console.error('Update task failed:', err)
+      setError(err.message || 'Gagal menyimpan perubahan. Silakan coba lagi.')
     } finally {
       setSaving(false)
     }
@@ -432,6 +440,14 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
               placeholder="Tidak ada catatan..."
             />
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs animate-in fade-in slide-in-from-top-1">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              <p>{error}</p>
+            </div>
+          )}
 
           {/* Meta info */}
           <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/30 border border-border/40">

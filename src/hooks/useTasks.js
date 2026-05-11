@@ -1,5 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
-import { differenceInHours, differenceInDays, parseISO } from 'date-fns'
+import { 
+  differenceInHours, 
+  differenceInDays, 
+  parseISO, 
+  addDays, 
+  addWeeks, 
+  addMonths, 
+  getDay, 
+  format 
+} from 'date-fns'
 import {
   getTasks,
   addTask as apiAddTask,
@@ -177,7 +186,7 @@ export function useTasks(user, isPro = false) {
         nextDeadline = addDays(currentDeadline, 1)
       }
 
-      finalUpdates.deadline = formatDate(nextDeadline, 'yyyy-MM-dd')
+      finalUpdates.deadline = format(nextDeadline, 'yyyy-MM-dd')
       finalUpdates.status = 'todo' // Reset ke todo untuk hari berikutnya
       finalUpdates.completed_at = null
       

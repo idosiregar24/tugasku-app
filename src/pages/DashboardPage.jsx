@@ -7,6 +7,7 @@ import { useProfile } from '@/hooks/useProfile'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { KanbanBoard } from '@/components/tasks/KanbanBoard'
 import { TaskForm } from '@/components/tasks/TaskForm'
+import { ScheduleForm } from '@/components/tasks/ScheduleForm'
 import { Spotlight } from '@/components/ui/spotlight'
 import { BackgroundBeams } from '@/components/ui/background-beams'
 import { TaskDetailModal } from '@/components/tasks/TaskDetailModal'
@@ -16,6 +17,7 @@ import { ProfileModal } from '@/components/profile/ProfileModal'
 import { NotificationPanel } from '@/components/layout/NotificationPanel'
 import { ScheduleView } from '@/components/tasks/ScheduleView'
 import { DeveloperModal } from '@/components/layout/DeveloperModal'
+import { FloatingNotepad } from '@/components/layout/FloatingNotepad'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -80,7 +82,6 @@ export function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterPriorities, setFilterPriorities] = useState([])
   const [sortKey, setSortKey] = useState('created')
-  const [bgImage, setBgImage] = useState(() => localStorage.getItem('tugasku-bg') || 'bg-slate-900')
   const [showStats, setShowStats] = useState(true)
   const [activeTab, setActiveTab] = useState('dashboard')
   const [developerOpen, setDeveloperOpen] = useState(false)
@@ -91,10 +92,6 @@ export function DashboardPage() {
     localStorage.getItem('tugasku-quote') || "Fokus pada proses, hasil akan mengikuti. ✨"
   )
   const [tempQuote, setTempQuote] = useState(userQuote)
-
-  useEffect(() => {
-    localStorage.setItem('tugasku-bg', bgImage)
-  }, [bgImage])
 
   const handleSaveQuote = () => {
     const trimmed = tempQuote.trim()
@@ -214,7 +211,7 @@ export function DashboardPage() {
   }
 
   return (
-    <div className={cn("min-h-screen flex bg-background transition-all duration-500 relative overflow-hidden", bgImage)}>
+    <div className={cn("min-h-screen flex bg-background transition-all duration-500 relative overflow-hidden")}>
       <div className="noise z-0" />
       
       {/* Sidebar */}
@@ -382,28 +379,6 @@ export function DashboardPage() {
                     <div className="flex-1 w-full">
                       <SearchFilter onSearch={setSearchQuery} onFilter={setFilterPriorities} onSort={setSortKey} />
                     </div>
-                    
-                    <div className="flex items-center gap-2 p-1.5 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10">
-                      {[
-                        { id: 'bg-background', class: 'bg-slate-900', label: 'Default' },
-                        { id: 'bg-[#0a0a0c]',  class: 'bg-[#0a0a0c]', label: 'Midnight' },
-                        { id: 'bg-[#0f172a]',  class: 'bg-[#0f172a]', label: 'Deep Ink' },
-                        { id: 'bg-[#13111c]',  class: 'bg-[#13111c]', label: 'Aura Dark' },
-                        { id: 'bg-slate-50 dark:bg-slate-950', class: 'bg-slate-200', label: 'Adaptive' },
-                      ].map(bg => (
-                        <button 
-                          key={bg.id}
-                          title={bg.label}
-                          onClick={() => setBgImage(bg.id)}
-                          className={cn(
-                            "w-7 h-7 rounded-lg border-2 transition-all hover:scale-110",
-                            bgImage === bg.id ? "border-primary shadow-[0_0_10px_hsl(var(--primary)/0.5)]" : "border-transparent opacity-60 hover:opacity-100"
-                          )}
-                        >
-                          <div className={cn("w-full h-full rounded-[4px]", bg.class)} />
-                        </button>
-                      ))}
-                    </div>
                   </div>
 
                   {/* NEW TASK BUTTON BELOW SEARCH */}
@@ -567,21 +542,34 @@ export function DashboardPage() {
       />
       
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md bg-card/90 backdrop-blur-2xl border-primary/20 rounded-[40px]">
-          <DialogHeader><DialogTitle className="text-2xl font-black text-center pt-4 uppercase">New Task</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-md bg-card/90 backdrop-blur-2xl border-primary/20 rounded-[40px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-center pt-4 uppercase">
+              {taskType === 'schedule' ? 'Tambah Jadwal' : 'Tambah Tugas'}
+            </DialogTitle>
+          </DialogHeader>
           <div className="p-2">
-            <TaskForm
-              onAdd={addTask}
-              isLimitReached={isLimitReached}
-              todoCount={todoTasks.length}
-              freeLimit={taskLimit}
-              defaultType={taskType}
-              onClose={() => setDialogOpen(false)}
-              onUpgrade={() => { setDialogOpen(false); setUpgradeOpen(true) }}
-            />
+            {taskType === 'schedule' ? (
+              <ScheduleForm
+                onAdd={addTask}
+                isLimitReached={isLimitReached}
+                todoCount={todoTasks.length}
+                freeLimit={taskLimit}
+                onClose={() => setDialogOpen(false)}
+              />
+            ) : (
+              <TaskForm
+                onAdd={addTask}
+                isLimitReached={isLimitReached}
+                todoCount={todoTasks.length}
+                freeLimit={taskLimit}
+                onClose={() => setDialogOpen(false)}
+              />
+            )}
           </div>
         </DialogContent>
       </Dialog>
+      <FloatingNotepad />
       </div>
     </div>
   )
