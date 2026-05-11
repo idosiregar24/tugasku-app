@@ -18,6 +18,7 @@ import { NotificationPanel } from '@/components/layout/NotificationPanel'
 import { ScheduleView } from '@/components/tasks/ScheduleView'
 import { DeveloperModal } from '@/components/layout/DeveloperModal'
 import { FloatingNotepad } from '@/components/layout/FloatingNotepad'
+import { FloatingPomodoro } from '@/components/layout/FloatingPomodoro'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -44,7 +45,8 @@ import {
   MousePointer2,
   Clock,
   AlertTriangle,
-  CheckCircle2
+  CheckCircle2,
+  Monitor
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -85,6 +87,25 @@ export function DashboardPage() {
   const [showStats, setShowStats] = useState(true)
   const [activeTab, setActiveTab] = useState('dashboard')
   const [developerOpen, setDeveloperOpen] = useState(false)
+  const [isTVMode, setIsTVMode] = useState(false)
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) setIsTVMode(false)
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
+
+  const toggleTVMode = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => console.error(err))
+      setIsTVMode(true)
+    } else {
+      document.exitFullscreen()
+      setIsTVMode(false)
+    }
+  }
 
   // Editable Quote State
   const [isEditingQuote, setIsEditingQuote] = useState(false)
@@ -210,6 +231,48 @@ export function DashboardPage() {
     )
   }
 
+  if (isTVMode) {
+    return (
+      <div className={cn("min-h-screen flex bg-background transition-all duration-500 relative overflow-hidden")}>
+        <div className="noise z-0" />
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+          <Spotlight className="-top-40 left-0" fill="hsl(var(--primary))" />
+          <BackgroundBeams />
+        </div>
+        
+        <div className="flex-1 flex flex-col h-screen overflow-hidden relative z-10 p-8">
+          <div className="flex justify-between items-center mb-8 shrink-0">
+            <div>
+              <h1 className="text-3xl font-black text-foreground tracking-tight flex items-center gap-3">
+                <Monitor className="w-8 h-8 text-primary" />
+                Tugasku Board
+              </h1>
+              <p className="text-muted-foreground mt-1 text-[10px] font-black uppercase tracking-[0.2em]">Live Focus Mode</p>
+            </div>
+            <Button 
+              onClick={toggleTVMode}
+              className="h-10 px-4 rounded-xl border border-white/10 hover:bg-white/5 bg-transparent text-foreground shadow-sm transition-all"
+            >
+              <X className="w-4 h-4 mr-2" /> Keluar Fullscreen
+            </Button>
+          </div>
+
+          <div className="relative flex-1 w-full min-h-0">
+             <KanbanBoard
+                todoTasks={filteredTodo}
+                finishedTasks={filteredFinished}
+                doneTasks={filteredDone}
+                onUpdateTask={updateTask}
+                onDeleteTask={deleteTask}
+                onOpenDetail={handleOpenDetail}
+              />
+          </div>
+        </div>
+        <TaskDetailModal task={selectedTask} open={!!selectedTask} onClose={handleCloseDetail} onUpdate={updateTask} onDelete={deleteTask} />
+      </div>
+    )
+  }
+
   return (
     <div className={cn("min-h-screen flex bg-background transition-all duration-500 relative overflow-hidden")}>
       <div className="noise z-0" />
@@ -243,6 +306,16 @@ export function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-4">
+             {activeTab === 'dashboard' && (
+               <button 
+                 onClick={toggleTVMode}
+                 className="hidden md:flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-primary/10 hover:bg-primary/20 text-primary font-bold transition-all border border-primary/20"
+                 title="Focus Mode (Fullscreen)"
+               >
+                 <Monitor className="h-4 w-4" /> 
+                 <span className="text-xs uppercase tracking-widest">Focus Mode</span>
+               </button>
+             )}
              <div className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/5 border border-white/5">
                 <Search className="w-4 h-4 text-muted-foreground" />
                 <input 
@@ -570,6 +643,7 @@ export function DashboardPage() {
         </DialogContent>
       </Dialog>
       <FloatingNotepad />
+      <FloatingPomodoro />
       </div>
     </div>
   )

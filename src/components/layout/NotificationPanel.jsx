@@ -46,6 +46,13 @@ function NotifItem({ task, onOpen, onClose }) {
 export function NotificationPanel({ notifications = [], onOpenDetail }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
+  const [perm, setPerm] = useState('Notification' in window ? Notification.permission : 'denied')
+
+  const askPermission = () => {
+    if ('Notification' in window) {
+      Notification.requestPermission().then(p => setPerm(p))
+    }
+  }
 
   // Close on outside click
   useEffect(() => {
@@ -133,10 +140,18 @@ export function NotificationPanel({ notifications = [], onOpenDetail }) {
           </div>
 
           {/* Footer */}
-          <div className="px-4 py-2.5 border-t border-border bg-secondary/20">
+          <div className="px-4 py-2.5 border-t border-border bg-secondary/20 flex flex-col gap-2">
             <p className="text-[10px] text-muted-foreground/60 text-center">
               Tugas dengan deadline ≤ 2 hari atau sudah terlambat ditampilkan di sini.
             </p>
+            {perm === 'default' && (
+              <button 
+                onClick={askPermission} 
+                className="text-[10px] bg-primary/20 hover:bg-primary/30 text-primary py-1.5 rounded-lg font-bold transition-colors w-full border border-primary/20"
+              >
+                Aktifkan Notifikasi Sistem (HP / Laptop)
+              </button>
+            )}
           </div>
         </div>
       )}

@@ -249,13 +249,26 @@ export function useTasks(user, isPro = false) {
  * @param {string} title
  * @param {string} body
  */
-function sendBrowserNotification(title, body) {
+async function sendBrowserNotification(title, body) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return
 
   try {
+    // Pada HP (terutama Android/Chrome), Notification harus lewat Service Worker
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.ready
+      if (registration) {
+        return registration.showNotification(title, {
+          body,
+          icon: '/favicon.ico', // Pastikan icon tersedia
+          vibrate: [200, 100, 200]
+        })
+      }
+    }
+    
+    // Fallback untuk Desktop
     new Notification(title, {
       body,
-      icon: '/favicon.ico', // Pastikan icon tersedia
+      icon: '/favicon.ico',
     })
   } catch (err) {
     console.error('Failed to send notification:', err)
