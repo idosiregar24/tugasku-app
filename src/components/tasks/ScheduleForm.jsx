@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { motion } from 'framer-motion'
+import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 
 const priorityColor = { Low: 'bg-blue-400', Medium: 'bg-yellow-400', High: 'bg-red-400' }
@@ -31,7 +32,7 @@ const priorityColor = { Low: 'bg-blue-400', Medium: 'bg-yellow-400', High: 'bg-r
  * Terpisah dari TaskForm, fokus pada waktu mulai & selesai
  */
 export function ScheduleForm({ onAdd, isLimitReached, todoCount, freeLimit, onClose }) {
-  const today = new Date().toISOString().split('T')[0]
+  const today = format(new Date(), 'yyyy-MM-dd')
   const [form, setForm] = useState({ 
     title: '', 
     deadline: today, 
@@ -143,9 +144,9 @@ export function ScheduleForm({ onAdd, isLimitReached, todoCount, freeLimit, onCl
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Header badge */}
         <div className="flex items-center gap-2 justify-center">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20">
-            <CalendarIcon className="w-3.5 h-3.5 text-violet-400" />
-            <span className="text-[10px] font-black text-violet-400 uppercase tracking-widest">Mode Jadwal</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+            <CalendarIcon className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[10px] font-black text-primary uppercase tracking-widest">Mode Jadwal</span>
           </div>
         </div>
 
@@ -179,10 +180,10 @@ export function ScheduleForm({ onAdd, isLimitReached, todoCount, freeLimit, onCl
         </div>
 
         {/* Waktu Mulai & Selesai — WAJIB */}
-        <div className="p-4 rounded-2xl bg-violet-500/5 border border-violet-500/15 space-y-3">
+        <div className="p-4 rounded-2xl bg-primary/5 border border-primary/15 space-y-3">
           <div className="flex items-center gap-2 mb-1">
-            <Clock className="w-4 h-4 text-violet-400" />
-            <span className="text-xs font-bold text-violet-400 uppercase tracking-wider">Waktu Kegiatan</span>
+            <Clock className="w-4 h-4 text-primary" />
+            <span className="text-xs font-bold text-primary uppercase tracking-wider">Waktu Kegiatan</span>
             <span className="text-[10px] text-destructive font-bold ml-auto">* Wajib</span>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -245,7 +246,7 @@ export function ScheduleForm({ onAdd, isLimitReached, todoCount, freeLimit, onCl
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label className="text-sm font-bold flex items-center gap-2">
-                <Repeat className="w-3.5 h-3.5 text-violet-400" /> Jadwal Berulang
+                <Repeat className="w-3.5 h-3.5 text-primary" /> Jadwal Berulang
               </Label>
               <p className="text-[10px] text-muted-foreground">Aktifkan untuk kegiatan rutin</p>
             </div>
@@ -304,8 +305,8 @@ export function ScheduleForm({ onAdd, isLimitReached, todoCount, freeLimit, onCl
                           className={cn(
                             "w-8 h-8 rounded-full text-[10px] font-bold border transition-all",
                             isActive 
-                              ? "bg-violet-500 border-violet-500 text-white shadow-lg shadow-violet-500/20" 
-                              : "bg-white/5 border-white/10 text-muted-foreground hover:border-violet-500/50"
+                              ? "bg-primary border-primary text-primary-foreground" 
+                              : "bg-card/60 border-hairline/15 text-muted-foreground hover:border-primary/50"
                           )}
                         >
                           {day.l}
@@ -356,7 +357,7 @@ export function ScheduleForm({ onAdd, isLimitReached, todoCount, freeLimit, onCl
           <Button
             id="schedule-submit-btn"
             type="submit"
-            className="flex-1 h-11 bg-violet-600 hover:bg-violet-700 text-white"
+            className="flex-1 h-11 rounded-full"
             disabled={loading || !form.title.trim()}
           >
             {loading ? (

@@ -11,14 +11,15 @@ export function ScheduleView({ tasks = [], onAddTask, onEditTask }) {
   const scrollContainerRef = useRef(null)
   const hourRefs = useRef({})
 
-  // Auto-scroll ke jam sekarang saat mount
+  // Auto-scroll the timeline (only the timeline, not the page) to the current hour
   useEffect(() => {
     const target = hourRefs.current[currentHour]
-    if (target && scrollContainerRef.current) {
-      setTimeout(() => {
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }, 500)
-    }
+    const container = scrollContainerRef.current
+    if (!target || !container) return
+    const timer = setTimeout(() => {
+      container.scrollTo({ top: target.offsetTop - container.clientHeight / 2 + target.offsetHeight / 2, behavior: 'smooth' })
+    }, 300)
+    return () => clearTimeout(timer)
   }, [currentHour])
   
   // Filter tasks that have time and are for today (or have no date but have time)
@@ -44,30 +45,29 @@ export function ScheduleView({ tasks = [], onAddTask, onEditTask }) {
   const hours = Array.from({ length: 24 }, (_, i) => i)
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6 md:space-y-8 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black text-foreground tracking-tight">Daily Schedule</h2>
-          <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1 font-medium">
-            <Calendar className="w-4 h-4" /> {format(today, 'EEEE, dd MMMM yyyy', { locale: localeId })}
+          <p className="eyebrow flex items-center gap-2 mb-2">
+            <Calendar className="w-3.5 h-3.5" /> {format(today, 'EEEE, dd MMMM yyyy', { locale: localeId })}
           </p>
+          <h2 className="text-2xl md:text-3xl font-semibold text-foreground tracking-[-0.03em]">Agenda hari ini</h2>
         </div>
-        <button 
+        <button
           onClick={onAddTask}
-          className="h-11 px-6 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center gap-2"
+          className="lg-ink hidden md:flex h-11 px-5 rounded-full font-semibold text-sm items-center gap-2"
         >
           <Plus className="w-4 h-4" /> Tambah Jadwal
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-8">
         {/* Timeline View */}
         <div className="lg:col-span-3 space-y-4">
-          <div 
+          <div
             ref={scrollContainerRef}
-            className="p-8 rounded-[40px] bg-card/40 backdrop-blur-3xl border border-white/10 shadow-2xl relative overflow-hidden max-h-[70vh] overflow-y-auto custom-scrollbar"
+            className="surface p-4 md:p-7 rounded-[26px] relative overflow-hidden max-h-[65dvh] md:max-h-[70vh] overflow-y-auto overscroll-contain"
           >
-            <div className="absolute top-0 left-20 bottom-0 w-px bg-white/5" />
             
             <div className="space-y-0">
               {hours.map(hour => {
@@ -80,32 +80,32 @@ export function ScheduleView({ tasks = [], onAddTask, onEditTask }) {
                     key={hour} 
                     ref={el => hourRefs.current[hour] = el}
                     className={cn(
-                      "group flex gap-8 min-h-[100px] relative transition-all duration-500",
-                      isNow && "bg-primary/5 rounded-2xl -mx-4 px-4 border border-primary/10"
+                      "group flex gap-4 md:gap-8 min-h-[80px] md:min-h-[100px] relative transition-all duration-500",
+                      isNow && "bg-primary/5 rounded-2xl -mx-2 px-2 md:-mx-4 md:px-4 border border-primary/10"
                     )}
                   >
                     {/* Time Label */}
                     <div className="w-12 text-right pt-4">
                       <span className={cn(
-                        "text-[10px] font-black uppercase tracking-widest transition-colors",
-                        isNow ? "text-primary" : "text-muted-foreground/40 group-hover:text-primary"
+                        "font-mono text-[11px] font-medium tabular-nums transition-colors",
+                        isNow ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
                       )}>
                         {timeStr}
                       </span>
                       {isNow && (
-                        <motion.div 
+                        <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
                           className="flex items-center justify-end gap-1 mt-1"
                         >
                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                           <span className="text-[8px] font-black text-primary uppercase">Now</span>
+                           <span className="font-mono text-[10px] font-medium text-primary uppercase">Kini</span>
                         </motion.div>
                       )}
                     </div>
 
                     {/* Task Slot */}
-                    <div className="flex-1 py-4 border-t border-white/5 relative">
+                    <div className="flex-1 min-w-0 py-4 border-t border-hairline/[0.06] relative">
                       {tasksInHour.length > 0 ? (
                         <div className="flex flex-col gap-3">
                           {tasksInHour.map(task => (
@@ -128,9 +128,9 @@ export function ScheduleView({ tasks = [], onAddTask, onEditTask }) {
                                   task.priority === 'Medium' ? "bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.4)]" :
                                   "bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.4)]"
                                 )} />
-                                <div>
-                                  <p className="text-sm font-black text-foreground">{task.title}</p>
-                                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                                <div className="min-w-0">
+                                  <p className="text-sm font-semibold text-foreground break-words">{task.title}</p>
+                                  <p className="font-mono text-[11px] text-muted-foreground mt-1 flex items-center gap-1.5 tabular-nums">
                                     <Clock className="w-3 h-3" /> {task.start_time} - {task.end_time || '??:??'}
                                   </p>
                                 </div>
@@ -141,7 +141,7 @@ export function ScheduleView({ tasks = [], onAddTask, onEditTask }) {
                         </div>
                       ) : (
                         <div className="h-full flex items-center">
-                          <div className="w-2 h-2 rounded-full bg-white/5 group-hover:bg-primary/20 transition-all" />
+                          <div className="w-2 h-2 rounded-full bg-hairline/10 group-hover:bg-primary/20 transition-all" />
                         </div>
                       )}
                     </div>
@@ -154,39 +154,39 @@ export function ScheduleView({ tasks = [], onAddTask, onEditTask }) {
 
         {/* Sidebar Info */}
         <div className="space-y-6">
-          <div className="p-6 rounded-3xl bg-primary/10 border border-primary/20 space-y-4">
-             <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-primary text-white">
+          <div className="surface p-5 rounded-[22px] space-y-4">
+             <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-foreground text-background">
                   <Clock className="w-4 h-4" />
                 </div>
-                <h4 className="text-xs font-black uppercase tracking-widest text-primary">Summary</h4>
+                <h4 className="eyebrow">Ringkasan</h4>
              </div>
-             <div className="space-y-4">
+             <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-muted-foreground">Total Jadwal</span>
-                  <span className="text-sm font-black text-foreground">{dailyTasks.length}</span>
+                  <span className="text-sm text-muted-foreground">Total jadwal</span>
+                  <span className="text-sm font-semibold text-foreground tabular-nums">{dailyTasks.length}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-muted-foreground">Selesai</span>
-                  <span className="text-sm font-black text-emerald-400">
+                  <span className="text-sm text-muted-foreground">Selesai</span>
+                  <span className="text-sm font-semibold text-success tabular-nums">
                     {dailyTasks.filter(t => t.status === 'done').length}
                   </span>
                 </div>
              </div>
           </div>
 
-          <div className="p-6 rounded-3xl bg-card/40 border border-white/10 space-y-4">
-             <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Next Activity</h4>
+          <div className="surface p-5 rounded-[22px] space-y-3">
+             <h4 className="eyebrow">Agenda berikutnya</h4>
              {dailyTasks.filter(t => t.status !== 'done').slice(0, 1).map(task => (
                <div key={task.id} className="space-y-2">
-                 <p className="text-sm font-black text-foreground">{task.title}</p>
-                 <div className="flex items-center gap-2 text-[10px] font-bold text-primary bg-primary/10 w-fit px-2 py-1 rounded-lg uppercase tracking-widest">
+                 <p className="text-sm font-semibold text-foreground">{task.title}</p>
+                 <div className="flex items-center gap-1.5 font-mono text-[11px] text-primary bg-primary/10 w-fit px-2 py-1 rounded-md tabular-nums">
                    <Clock className="w-3 h-3" /> {task.start_time}
                  </div>
                </div>
              ))}
              {dailyTasks.filter(t => t.status !== 'done').length === 0 && (
-               <p className="text-xs text-muted-foreground italic">No upcoming tasks.</p>
+               <p className="text-sm text-muted-foreground">Tidak ada agenda berikutnya.</p>
              )}
           </div>
         </div>

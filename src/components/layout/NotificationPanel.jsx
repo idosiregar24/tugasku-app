@@ -12,9 +12,9 @@ function NotifItem({ task, onOpen, onClose }) {
   const formatted = format(deadline, 'dd MMM yyyy', { locale: localeId })
 
   const getUrgency = () => {
-    if (diffDays < 0)    return { icon: AlertTriangle, color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/20',    label: `Terlambat ${Math.abs(diffDays)} hari` }
-    if (diffDays === 0)  return { icon: Clock,         color: 'text-amber-400',  bg: 'bg-amber-400/10 border-amber-400/20', label: 'Deadline hari ini!' }
-    return               { icon: CalendarClock,         color: 'text-orange-400', bg: 'bg-orange-400/10 border-orange-400/20', label: `${diffDays} hari lagi` }
+    if (diffDays < 0)    return { icon: AlertTriangle, color: 'text-red-600 dark:text-red-400',    bg: 'bg-red-500/10 border-red-500/20',    label: `Terlambat ${Math.abs(diffDays)} hari` }
+    if (diffDays === 0)  return { icon: Clock,         color: 'text-amber-700 dark:text-amber-400',  bg: 'bg-amber-400/10 border-amber-400/20', label: 'Deadline hari ini!' }
+    return               { icon: CalendarClock,         color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-400/10 border-orange-400/20', label: `${diffDays} hari lagi` }
   }
 
   const { icon: Icon, color, bg, label } = getUrgency()
@@ -46,7 +46,8 @@ function NotifItem({ task, onOpen, onClose }) {
 export function NotificationPanel({ notifications = [], onOpenDetail }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
-  const [perm, setPerm] = useState('Notification' in window ? Notification.permission : 'denied')
+  // iOS Safari only exposes Notification once the app is added to the home screen
+  const [perm, setPerm] = useState('Notification' in window ? Notification.permission : 'unsupported')
 
   const askPermission = () => {
     if ('Notification' in window) {
@@ -74,34 +75,30 @@ export function NotificationPanel({ notifications = [], onOpenDetail }) {
         onClick={() => setOpen(o => !o)}
         aria-label={count > 0 ? `${count} notifikasi` : 'Tidak ada notifikasi'}
         className={cn(
-          'w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-all duration-200',
-          'border hover:border-primary/40',
-          'hover:bg-secondary/80 active:scale-95',
-          open
-            ? 'bg-primary/10 border-primary/30 text-primary'
-            : 'bg-secondary border-border text-muted-foreground hover:text-foreground'
+          'glass-chrome w-10 h-10 rounded-full flex items-center justify-center transition active:scale-95',
+          open ? 'text-primary' : 'text-foreground/80 hover:text-foreground'
         )}
       >
-        <Bell className={cn('h-3.5 w-3.5 sm:h-4 sm:w-4', count > 0 && !open && 'animate-pulse text-red-400')} />
+        <Bell className={cn('h-[18px] w-[18px]', count > 0 && !open && 'text-red-500')} />
       </button>
 
       {/* Badge */}
       {count > 0 && (
-        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-red-500 text-white text-[9px] sm:text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-background pointer-events-none">
+        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-background pointer-events-none">
           {count > 9 ? '9+' : count}
         </span>
       )}
 
       {/* Dropdown panel */}
       {open && (
-        <div className="fixed inset-x-4 top-24 sm:absolute sm:inset-auto sm:right-0 sm:top-14 z-[100] sm:w-96 max-w-sm mx-auto sm:mx-0 bg-card/95 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden animate-fade-in">
+        <div className="lg-rim !fixed inset-x-3 top-[calc(4rem+env(safe-area-inset-top))] sm:!absolute sm:inset-auto sm:right-0 sm:top-14 z-[100] sm:w-96 max-w-sm mx-auto sm:mx-0 bg-card/90 backdrop-blur-2xl backdrop-saturate-150 rounded-[26px] overflow-hidden animate-fade-in">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <div className="flex items-center gap-2">
               <Bell className="h-4 w-4 text-primary" />
               <span className="text-sm font-semibold text-foreground">Notifikasi</span>
               {count > 0 && (
-                <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/25">
+                <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/25">
                   {count}
                 </span>
               )}
@@ -118,7 +115,7 @@ export function NotificationPanel({ notifications = [], onOpenDetail }) {
           <div className="p-3 max-h-80 overflow-y-auto space-y-2">
             {count === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 gap-2">
-                <CheckCircle2 className="h-10 w-10 text-green-400/50" />
+                <CheckCircle2 className="h-10 w-10 text-green-600/50 dark:text-green-400/50" />
                 <p className="text-sm font-medium text-muted-foreground">Semua tugas on-track! 🎉</p>
                 <p className="text-xs text-muted-foreground/60">Tidak ada deadline yang mendesak.</p>
               </div>
@@ -145,12 +142,17 @@ export function NotificationPanel({ notifications = [], onOpenDetail }) {
               Tugas dengan deadline ≤ 2 hari atau sudah terlambat ditampilkan di sini.
             </p>
             {perm === 'default' && (
-              <button 
-                onClick={askPermission} 
-                className="text-[10px] bg-primary/20 hover:bg-primary/30 text-primary py-1.5 rounded-lg font-bold transition-colors w-full border border-primary/20"
+              <button
+                onClick={askPermission}
+                className="text-xs bg-primary/20 hover:bg-primary/30 text-primary py-2 rounded-lg font-bold transition-colors w-full border border-primary/20"
               >
                 Aktifkan Notifikasi Sistem (HP / Laptop)
               </button>
+            )}
+            {perm === 'unsupported' && /iPhone|iPad|iPod/.test(navigator.userAgent) && (
+              <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
+                Di iPhone: ketuk <span className="font-bold text-foreground">Bagikan → Tambah ke Layar Utama</span>, lalu buka Tugasku dari ikonnya untuk mengaktifkan notifikasi.
+              </p>
             )}
           </div>
         </div>

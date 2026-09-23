@@ -126,7 +126,8 @@ export function useTasks(user, isPro = false) {
   // Trigger browser notification when urgent tasks found
   useEffect(() => {
     if (loading || notifications.length === 0) return
-    if (Notification.permission === 'granted') {
+    // iOS Safari only defines Notification for home-screen apps
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
       const urgentCount = notifications.length
       sendBrowserNotification(
         'Tugasku: Pengingat Deadline! ⚠️',
@@ -237,10 +238,6 @@ export function useTasks(user, isPro = false) {
     updateTask: handleUpdateTask,
     deleteTask: handleDeleteTask,
     notifications,
-    requestNotificationPermission: () => {
-      if (!('Notification' in window)) return
-      Notification.requestPermission()
-    },
   }
 }
 
@@ -259,16 +256,18 @@ async function sendBrowserNotification(title, body) {
       if (registration) {
         return registration.showNotification(title, {
           body,
-          icon: '/favicon.ico', // Pastikan icon tersedia
+          icon: '/icons/icon-192.png',
+          badge: '/icons/icon-192.png',
+          tag: 'tugasku-deadline',
           vibrate: [200, 100, 200]
         })
       }
     }
-    
+
     // Fallback untuk Desktop
     new Notification(title, {
       body,
-      icon: '/favicon.ico',
+      icon: '/icons/icon-192.png',
     })
   } catch (err) {
     console.error('Failed to send notification:', err)

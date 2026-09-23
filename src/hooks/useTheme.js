@@ -5,12 +5,8 @@ import { useState, useEffect } from 'react'
  * Preferensi disimpan di localStorage dan diterapkan ke <html> element
  */
 export function useTheme() {
-  const [theme, setTheme] = useState(() => {
-    // Ambil dari localStorage atau deteksi preferensi OS
-    const stored = localStorage.getItem('tugasku-theme')
-    if (stored) return stored
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-  })
+  // Default is the day (light) scene; dark is opt-in via the toggle
+  const [theme, setTheme] = useState(() => localStorage.getItem('tugasku-theme') || 'light')
 
   useEffect(() => {
     const root = document.documentElement
@@ -25,6 +21,9 @@ export function useTheme() {
     }
 
     localStorage.setItem('tugasku-theme', theme)
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', theme === 'light' ? '#f6f9fc' : '#070b1c')
 
     // Re-enable transisi setelah satu frame
     requestAnimationFrame(() => {

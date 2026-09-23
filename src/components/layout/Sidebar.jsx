@@ -1,195 +1,164 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  LayoutDashboard, 
-  Settings, 
-  Crown, 
-  LogOut, 
-  Zap, 
+import { motion } from 'framer-motion'
+import {
+  LayoutDashboard,
+  Crown,
+  LogOut,
+  Zap,
   User,
   ChevronLeft,
   ChevronRight,
-  Plus,
   Sun,
   Moon,
   ShieldCheck,
-  Clock,
-  Code2
+  CalendarClock,
+  Code2,
+  Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/hooks/useTheme'
 import { useNavigate } from 'react-router-dom'
+import { BrandMark } from '@/components/layout/BrandMark'
 
-export function Sidebar({ activeTab, onTabChange, isPro, isAdmin, user, onOpenProfile, onSignOut, onOpenDeveloper }) {
+function SideLabel({ children, className }) {
+  return (
+    <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={cn('text-sm font-medium whitespace-nowrap', className)}>
+      {children}
+    </motion.span>
+  )
+}
+
+function SideButton({ icon: Icon, label, collapsed, onClick, className }) {
+  return (
+    <button
+      onClick={onClick}
+      title={collapsed ? label : undefined}
+      className={cn('flex items-center gap-3 px-3 h-10 rounded-xl text-muted-foreground hover:bg-hairline/[0.06] hover:text-foreground transition-colors', className)}
+    >
+      <Icon className="w-[18px] h-[18px] shrink-0" />
+      {!collapsed && <SideLabel>{label}</SideLabel>}
+    </button>
+  )
+}
+
+export function Sidebar({ activeTab, onTabChange, isPro, isAdmin, user, profile, onOpenProfile, onSignOut, onOpenDeveloper, onOpenAssistant, onUpgrade }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
 
   const menuItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Workspace' },
+    { id: 'schedule', icon: CalendarClock, label: 'Jadwal' },
     { id: 'analytics', icon: Zap, label: 'Insights', pro: true },
-    { id: 'schedule', icon: Clock, label: 'Schedule' },
-    { id: 'settings', icon: User, label: 'Profile' },
+    { id: 'assistant', icon: Sparkles, label: 'Asisten AI', action: onOpenAssistant },
+    { id: 'settings', icon: User, label: 'Profil' },
   ]
-
   if (isAdmin) {
     menuItems.push({ id: 'admin', icon: ShieldCheck, label: 'Admin Panel', path: '/admin' })
   }
 
+  const displayName = profile?.full_name || user?.email?.split('@')[0]
+
   return (
-    <motion.aside 
+    <motion.aside
       initial={false}
-      animate={{ width: isCollapsed ? 80 : 260 }}
-      className="hidden md:flex flex-col h-screen bg-card/30 backdrop-blur-3xl border-r border-white/10 p-4 relative z-50 group"
+      animate={{ width: isCollapsed ? 76 : 248 }}
+      className="hidden md:flex flex-col my-3 ml-3 h-[calc(100dvh-1.5rem)] surface rounded-[26px] p-3 z-50 shrink-0"
     >
-      {/* Collapse Toggle */}
-      <button 
+      <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-10 w-7 h-7 rounded-full bg-primary border-2 border-background flex items-center justify-center text-white shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:scale-110 transition-all z-[60]"
+        aria-label={isCollapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
+        className="lg-ink !absolute -right-3 top-9 w-6 h-6 rounded-full flex items-center justify-center z-[60]"
       >
-        {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
       </button>
 
-      <div className="flex items-center gap-3 px-2 mb-10 overflow-hidden">
-        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
-          <LayoutDashboard className="w-6 h-6 text-white" />
-        </div>
-        {!isCollapsed && (
-          <motion.span 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-lg font-black tracking-tighter text-foreground whitespace-nowrap"
-          >
-            Tugasku.
-          </motion.span>
-        )}
+      <div className="flex items-center gap-2.5 px-2 pt-1 mb-7 overflow-hidden">
+        <BrandMark className="w-9 h-9 shrink-0" />
+        {!isCollapsed && <SideLabel className="text-xl font-semibold tracking-[-0.03em] text-foreground">Tugasku</SideLabel>}
       </div>
 
-      <nav className="flex-1 space-y-2 overflow-hidden">
-        {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => {
-              if (item.path) navigate(item.path)
-              else onTabChange(item.id)
-            }}
-            className={cn(
-              "w-full flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-300 group relative",
-              activeTab === item.id 
-                ? "bg-primary/10 text-primary shadow-sm border border-primary/20" 
-                : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
-            )}
-          >
-            <item.icon className={cn("w-5 h-5 shrink-0", activeTab === item.id ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} />
-            {!isCollapsed && (
-              <motion.span 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-sm font-bold whitespace-nowrap"
-              >
-                {item.label}
-              </motion.span>
-            )}
-            {!isCollapsed && item.pro && !isPro && (
-              <Crown className="w-3 h-3 text-amber-400 absolute right-3" />
-            )}
-            {activeTab === item.id && (
-              <motion.div 
-                layoutId="active-nav"
-                className="absolute left-0 w-1 h-6 bg-primary rounded-r-full"
-              />
-            )}
-          </button>
-        ))}
+      {!isCollapsed && <p className="eyebrow px-3 mb-2">Menu</p>}
+      <nav className="flex-1 space-y-0.5 overflow-hidden">
+        {menuItems.map((item) => {
+          const active = activeTab === item.id
+          return (
+            <button
+              key={item.id}
+              title={isCollapsed ? item.label : undefined}
+              onClick={() => {
+                if (item.path) navigate(item.path)
+                else if (item.action) item.action()
+                else onTabChange(item.id)
+              }}
+              className={cn(
+                'w-full flex items-center gap-3 px-3 h-10 rounded-xl transition-colors duration-200 relative',
+                active ? 'text-foreground' : 'text-muted-foreground hover:bg-hairline/[0.06] hover:text-foreground'
+              )}
+            >
+              {active && (
+                <motion.span
+                  layoutId="active-nav"
+                  className="lg-rim !absolute inset-0 rounded-xl bg-primary/15"
+                  transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+                />
+              )}
+              <item.icon className={cn('relative w-[18px] h-[18px] shrink-0', (active || item.id === 'assistant') && 'text-primary')} />
+              {!isCollapsed && <SideLabel className="relative">{item.label}</SideLabel>}
+              {!isCollapsed && item.pro && !isPro && <Crown className="w-3.5 h-3.5 text-amber-500 absolute right-3" />}
+            </button>
+          )
+        })}
       </nav>
 
-      <div className="mt-auto space-y-4">
+      <div className="mt-auto space-y-3">
         {!isPro && !isCollapsed && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="p-4 rounded-2xl bg-gradient-to-br from-amber-400/10 to-orange-400/5 border border-amber-400/20 mb-4"
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="lg-rim p-3.5 rounded-[18px] bg-card/55"
           >
-            <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1">Upgrade</p>
-            <p className="text-[10px] text-muted-foreground mb-3 leading-relaxed">Unlimited tasks & insights.</p>
-            <button className="w-full py-2 bg-amber-400 hover:bg-amber-500 text-black text-[9px] font-black uppercase tracking-widest rounded-lg transition-colors">
-              Get Pro
+            <p className="eyebrow text-primary mb-1.5">Tugasku Pro</p>
+            <p className="text-xs text-muted-foreground mb-3 leading-relaxed">Tugas tanpa batas & insight lengkap.</p>
+            <button
+              onClick={onUpgrade}
+              className="lg-ink w-full h-9 text-xs font-semibold rounded-full"
+            >
+              Upgrade
             </button>
           </motion.div>
         )}
 
-        <div className="flex flex-col gap-2">
-          <button 
+        <div className="flex flex-col gap-0.5">
+          <button
             onClick={onOpenProfile}
-            className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-white/5 transition-all group overflow-hidden"
+            className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-hairline/[0.06] transition-colors overflow-hidden"
           >
-            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden border border-primary/30 shrink-0">
-              <User className="w-4 h-4 text-primary" />
+            <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center overflow-hidden border border-primary/20 shrink-0 text-primary text-xs font-bold">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                (displayName?.[0] ?? '?').toUpperCase()
+              )}
             </div>
             {!isCollapsed && (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-left min-w-0"
-              >
-                <p className="text-[11px] font-black text-foreground truncate">{user?.email?.split('@')[0]}</p>
-                <p className="text-[9px] font-bold text-muted-foreground uppercase">{isPro ? 'Pro User' : 'Free Plan'}</p>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-left min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">{displayName}</p>
+                <p className="text-xs text-muted-foreground">{isPro ? 'Pro' : 'Paket Gratis'}</p>
               </motion.div>
             )}
           </button>
-
-          <button 
+          <SideButton icon={isDark ? Sun : Moon} label={isDark ? 'Mode Siang' : 'Mode Malam'} collapsed={isCollapsed} onClick={toggleTheme} />
+          <SideButton icon={Code2} label="Developer" collapsed={isCollapsed} onClick={onOpenDeveloper} />
+          <SideButton
+            icon={LogOut}
+            label="Keluar"
+            collapsed={isCollapsed}
             onClick={onSignOut}
-            className="flex items-center gap-3 px-3 py-3 rounded-2xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all group"
-          >
-            <LogOut className="w-5 h-5 shrink-0" />
-            {!isCollapsed && (
-              <motion.span 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-sm font-bold whitespace-nowrap"
-              >
-                Log Out
-              </motion.span>
-            )}
-          </button>
-
-          {/* Theme Toggle */}
-          <button 
-            onClick={toggleTheme}
-            className="flex items-center gap-3 px-3 py-3 rounded-2xl text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all group"
-          >
-            {isDark ? <Sun className="w-5 h-5 shrink-0" /> : <Moon className="w-5 h-5 shrink-0" />}
-            {!isCollapsed && (
-              <motion.span 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-sm font-bold whitespace-nowrap"
-              >
-                {isDark ? 'Light Mode' : 'Dark Mode'}
-              </motion.span>
-            )}
-          </button>
-
-          {/* Developer Link */}
-          <button 
-            onClick={onOpenDeveloper}
-            className="flex items-center gap-3 px-3 py-3 rounded-2xl text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all group"
-          >
-            <Code2 className="w-5 h-5 shrink-0" />
-            {!isCollapsed && (
-              <motion.span 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-sm font-bold whitespace-nowrap"
-              >
-                Developer
-              </motion.span>
-            )}
-          </button>
+            className="hover:bg-destructive/10 hover:text-destructive"
+          />
         </div>
       </div>
     </motion.aside>
   )
 }
-

@@ -17,7 +17,7 @@ import {
   Sparkles,
   ClipboardList
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
 import { PRIORITIES } from '@/types'
 
 const priorityColor = { Low: 'bg-blue-400', Medium: 'bg-yellow-400', High: 'bg-red-400' }
@@ -28,7 +28,7 @@ const priorityDesc = { Low: 'Tidak mendesak', Medium: 'Perlu diperhatikan', High
  * Fokus pada: judul, deadline, prioritas, dan catatan
  */
 export function TaskForm({ onAdd, isLimitReached, todoCount, freeLimit, onClose }) {
-  const today = new Date().toISOString().split('T')[0]
+  const today = format(new Date(), 'yyyy-MM-dd')
   const [step, setStep] = useState(1)
   const [form, setForm] = useState({ 
     title: '', 

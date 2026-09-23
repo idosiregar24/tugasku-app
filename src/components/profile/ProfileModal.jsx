@@ -144,7 +144,7 @@ export function ProfileModal({ open, onClose, user, profile, pendingPayment, isP
             <div className="space-y-6">
               {/* Profile Overview */}
               <div className="flex items-center gap-4 p-4 rounded-3xl bg-secondary/30 border border-border/50">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-violet-500 flex items-center justify-center text-2xl font-black text-white shadow-xl shadow-primary/20">
+                <div className="w-16 h-16 rounded-2xl bg-foreground flex items-center justify-center text-2xl font-bold text-background">
                   {initials}
                 </div>
                 <div>
@@ -231,7 +231,7 @@ export function ProfileModal({ open, onClose, user, profile, pendingPayment, isP
                     </Button>
                   </div>
                 ) : (
-                  <div className="p-6 rounded-[32px] bg-gradient-to-br from-primary/10 to-violet-500/10 border border-primary/20 text-center space-y-4">
+                  <div className="lg-rim p-6 rounded-[28px] bg-primary/10 text-center space-y-4">
                     <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
                       <Zap className="h-6 w-6 text-white" />
                     </div>
@@ -240,7 +240,7 @@ export function ProfileModal({ open, onClose, user, profile, pendingPayment, isP
                       <p className="text-xs text-muted-foreground mt-1 max-w-[200px] mx-auto">Get unlimited tasks, pro features, and priority support.</p>
                     </div>
                     <Button
-                      className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20"
+                      className="lg-ink w-full h-11 font-semibold text-sm rounded-full"
                       onClick={() => { handleClose(); onUpgrade?.() }}
                     >
                       Upgrade to Pro

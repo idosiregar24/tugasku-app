@@ -1,7 +1,5 @@
-import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  X, 
-  GitBranch, 
+import {
+  GitBranch,
   Camera, 
   Globe, 
   Briefcase, 
@@ -17,16 +15,11 @@ import { Button } from '@/components/ui/button'
 export function DeveloperModal({ open, onClose }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-slate-900 border-white/10 rounded-[32px] shadow-2xl">
+      <DialogContent className="sm:max-w-md p-0 gap-0 bg-slate-900 border-white/10 rounded-t-[28px] sm:rounded-[32px] shadow-2xl text-white">
         <div className="relative">
           {/* Header/Cover */}
           <div className="h-32 bg-gradient-to-r from-primary/80 via-primary to-blue-600 relative overflow-hidden">
              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20" />
-             <div className="absolute top-4 right-4">
-               <button onClick={onClose} className="p-2 rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors">
-                 <X className="w-4 h-4" />
-               </button>
-             </div>
           </div>
 
           {/* Profile Picture (Placeholder) */}

@@ -2,7 +2,10 @@ import animate from 'tailwindcss-animate'
 
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: ['class'],
+  // Touch screens never get stuck in a :hover state (iOS "sticky hover")
+  future: { hoverOnlyWhenSupported: true },
+  // Night theme = no `.light` class on <html>, so `dark:` means "not inside .light"
+  darkMode: ['variant', '&:not(.light *)'],
   content: [
     './index.html',
     './src/**/*.{js,jsx,ts,tsx}',
@@ -48,6 +51,10 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        hairline: 'hsl(var(--hairline) / <alpha-value>)',
+        success: 'hsl(var(--success) / <alpha-value>)',
+        warning: 'hsl(var(--warning) / <alpha-value>)',
+        leaf: 'hsl(var(--leaf) / <alpha-value>)',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -55,7 +62,9 @@ export default {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        serif: ['Newsreader', 'Georgia', 'serif'],
       },
       keyframes: {
         'fade-in': {

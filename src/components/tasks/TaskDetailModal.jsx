@@ -50,12 +50,12 @@ function DeadlineInfo({ deadline }) {
   if (diffDays < 0) {
     return (
       <div className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-        <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
+        <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 shrink-0" />
         <div>
-          <p className="text-sm font-semibold text-red-400">
+          <p className="text-sm font-semibold text-red-600 dark:text-red-400">
             Terlambat {Math.abs(diffDays)} hari
           </p>
-          <p className="text-xs text-red-400/70 mt-0.5">{formatted}</p>
+          <p className="text-xs text-red-600/70 dark:text-red-400/70 mt-0.5">{formatted}</p>
         </div>
       </div>
     )
@@ -64,10 +64,10 @@ function DeadlineInfo({ deadline }) {
   if (diffDays === 0) {
     return (
       <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-400/10 border border-amber-400/20">
-        <Clock className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+        <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
         <div>
-          <p className="text-sm font-semibold text-amber-400">Deadline hari ini!</p>
-          <p className="text-xs text-amber-400/70 mt-0.5">{formatted}</p>
+          <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">Deadline hari ini!</p>
+          <p className="text-xs text-amber-600/70 dark:text-amber-400/70 mt-0.5">{formatted}</p>
         </div>
       </div>
     )
@@ -76,12 +76,12 @@ function DeadlineInfo({ deadline }) {
   if (diffDays <= 3) {
     return (
       <div className="flex items-start gap-3 p-3 rounded-xl bg-orange-400/10 border border-orange-400/20">
-        <Clock className="h-4 w-4 text-orange-400 mt-0.5 shrink-0" />
+        <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400 mt-0.5 shrink-0" />
         <div>
-          <p className="text-sm font-semibold text-orange-400">
+          <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">
             {diffDays} hari lagi
           </p>
-          <p className="text-xs text-orange-400/70 mt-0.5">{formatted}</p>
+          <p className="text-xs text-orange-600/70 dark:text-orange-400/70 mt-0.5">{formatted}</p>
         </div>
       </div>
     )
@@ -224,9 +224,9 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
                 {togglingStatus ? (
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
                 ) : task.status === 'done' ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-400" />
+                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
                 ) : task.status === 'finished' ? (
-                  <Clock className="h-5 w-5 text-amber-400" />
+                  <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                 ) : (
                   <Circle className="h-5 w-5" />
                 )}
@@ -241,9 +241,9 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
                   <span
                     className={`text-[10px] sm:text-xs px-2 py-0.5 rounded-full border font-medium whitespace-nowrap ${
                       task.status === 'done'
-                        ? 'bg-green-400/15 text-green-400 border-green-400/30'
+                        ? 'bg-green-400/15 text-green-600 dark:text-green-400 border-green-400/30'
                         : task.status === 'finished'
-                        ? 'bg-amber-400/15 text-amber-400 border-amber-400/20'
+                        ? 'bg-amber-400/15 text-amber-600 dark:text-amber-400 border-amber-400/20'
                         : 'bg-primary/15 text-primary border-primary/30'
                     }`}
                   >
@@ -516,12 +516,12 @@ export function TaskDetailModal({ task, open, onClose, onUpdate, onDelete }) {
                 </>
               ) : task.status === 'finished' ? (
                 <>
-                  <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
                   Selesai
                 </>
               ) : (
                 <>
-                  <Clock className="h-3.5 w-3.5 text-amber-400" />
+                  <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
                   Belum Submit
                 </>
               )}

@@ -2,8 +2,22 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Icons & PWA -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#070b1c" />
+    <link rel="preload" as="image" type="image/svg+xml" href="/backgrounds/scene-day.svg" />
+
+    <!-- iOS home-screen app -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Tugasku" />
+    <meta name="format-detection" content="telephone=no" />
 
     <!-- SEO -->
     <title>Tugasku – Manajemen Tugas Produktif</title>
@@ -22,22 +36,22 @@
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Tugasku – Manajemen Tugas Produktif" />
     <meta name="twitter:description" content="Kelola tugas harianmu dengan Kanban board modern. Gratis untuk memulai." />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
 
     <!-- Apply saved theme before React loads to prevent flash -->
     <script>
       (function() {
         try {
-          var theme = localStorage.getItem('tugasku-theme');
-          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (theme === 'light' || (!theme && !prefersDark)) {
+          var theme = localStorage.getItem('tugasku-theme') || 'light';
+          if (theme === 'light') {
             document.documentElement.classList.add('light');
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f6f9fc');
           }
         } catch(e) {}
       })();
     </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

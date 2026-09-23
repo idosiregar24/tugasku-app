@@ -1,64 +1,103 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=JetBrains+Mono:wght@400..600&family=Newsreader:ital,opsz,wght@1,6..72,400..500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Theme: "clear sky" — a landscape fixed behind every page (public/backgrounds),
+  UI on frosted glass. Light = day scene, dark = night scene.
+  Glass alphas are tuned so muted text keeps >= 4.5:1 even over the pine trees.
+*/
 @layer base {
 
-  /* ── DARK (default) ── */
+  /* ── DARK (night) ── */
   :root {
-    --background: 240 20% 4%;
-    --foreground: 0 0% 97%;
-    --card: 240 16% 8%;
-    --card-foreground: 0 0% 97%;
-    --popover: 240 16% 8%;
-    --popover-foreground: 0 0% 97%;
-    --primary: 262 83% 65%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 14% 12%;
-    --secondary-foreground: 0 0% 97%;
-    --muted: 240 14% 12%;
-    --muted-foreground: 240 6% 55%;
-    --accent: 240 12% 16%;
-    --accent-foreground: 0 0% 97%;
-    --destructive: 0 84% 60%;
+    --background: 230 45% 7%;
+    --foreground: 220 30% 96%;
+    --card: 230 30% 11%;
+    --card-foreground: 220 30% 96%;
+    --popover: 230 30% 11%;
+    --popover-foreground: 220 30% 96%;
+    --primary: 84 58% 62%;
+    --primary-foreground: 230 30% 10%;
+    --secondary: 230 25% 17%;
+    --secondary-foreground: 220 30% 96%;
+    --muted: 230 25% 17%;
+    --muted-foreground: 225 16% 72%;
+    --accent: 88 20% 22%;
+    --accent-foreground: 220 30% 96%;
+    --destructive: 4 80% 62%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 12% 14%;
-    --input: 240 14% 12%;
-    --ring: 262 83% 65%;
-    --radius: 0.75rem;
+    --border: 230 20% 24%;
+    --input: 230 20% 24%;
+    --ring: 84 58% 62%;
+    --radius: 0.625rem;
+    /* Overlay tint for borders/fills on translucent surfaces: white on dark, ink on light */
+    --hairline: 0 0% 100%;
+    --success: 148 50% 58%;
+    --warning: 34 90% 62%;
+    /* Display accent (large text only) */
+    --leaf: 84 60% 66%;
+
+    /* Liquid glass: "regular" (content panels) and "clear" (floating controls) */
+    --glass: 230 35% 12%;
+    --glass-alpha: 0.5;
+    --glass-chrome-alpha: 0.34;
+    --glass-edge: 0 0% 100%;
+    --glass-edge-alpha: 0.12;
+    --glass-shadow: 0.6;
+    --lg-backdrop: blur(26px) saturate(180%) brightness(0.88);
+    --lg-backdrop-clear: blur(16px) saturate(190%) brightness(0.82);
+    --lg-sheen: 0.07;
+    --lg-rim-strong: 0.42;
+    --lg-rim-soft: 0.1;
+    --lg-inner: 0.1;
+    --lg-outline: 0;
+    --scene: url('/backgrounds/scene-night.svg');
   }
 
-  /* ── LIGHT ── */
+  /* ── LIGHT (day) ── */
   .light {
-    --background: 240 8% 97%;
-    --foreground: 240 10% 12%;
-    /* Darker charcoal for better base contrast */
+    --background: 210 40% 97%;
+    --foreground: 230 12% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 12%;
+    --card-foreground: 230 12% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 12%;
-    --primary: 262 83% 52%;
-    /* darker purple for light bg */
+    --popover-foreground: 230 12% 12%;
+    --primary: 88 58% 28%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 8% 90%;
-    /* slightly darker secondary */
-    --secondary-foreground: 240 15% 10%;
-    /* much darker secondary text */
-    --muted: 240 8% 90%;
-    --muted-foreground: 240 6% 30%;
-    /* much darker muted text for readability */
-    --accent: 240 8% 85%;
-    --accent-foreground: 240 15% 10%;
-    --destructive: 0 84% 50%;
+    --secondary: 215 25% 94%;
+    --secondary-foreground: 230 12% 12%;
+    --muted: 215 25% 94%;
+    --muted-foreground: 225 9% 36%;
+    --accent: 88 30% 90%;
+    --accent-foreground: 230 12% 12%;
+    --destructive: 4 72% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 10% 80%;
-    /* even more visible border */
-    --input: 240 8% 90%;
-    --ring: 262 83% 52%;
-    --radius: 0.75rem;
+    --border: 220 16% 86%;
+    --input: 220 16% 86%;
+    --ring: 88 58% 28%;
+    --hairline: 230 20% 12%;
+    --success: 150 60% 26%;
+    --warning: 26 85% 35%;
+    --leaf: 80 60% 35%;
+
+    --glass: 0 0% 100%;
+    --glass-alpha: 0.6;
+    --glass-chrome-alpha: 0.42;
+    --glass-edge: 0 0% 100%;
+    --glass-edge-alpha: 0.7;
+    --glass-shadow: 0.22;
+    /* brightness() lifts whatever is behind the glass so dark pines don't sink the text */
+    --lg-backdrop: blur(26px) saturate(180%) brightness(1.1);
+    --lg-backdrop-clear: blur(16px) saturate(200%) brightness(1.14);
+    --lg-sheen: 0.55;
+    --lg-rim-strong: 0.95;
+    --lg-rim-soft: 0.28;
+    --lg-inner: 0.55;
+    --lg-outline: 0.07;
+    --scene: url('/backgrounds/scene-day.svg');
   }
 
   * {
@@ -67,33 +106,69 @@
   }
 
   html {
-    transition: background-color 0.3s ease, color 0.3s ease;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    background-color: hsl(var(--background));
   }
 
   body {
-    background-color: hsl(var(--background));
+    background: transparent;
     color: hsl(var(--foreground));
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-optical-sizing: auto;
+    font-feature-settings: 'cv11', 'ss01';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+
+  /* The landscape behind every page. A fixed element (not background-attachment:
+     fixed, which iOS ignores); lvh so it never shows a gap when Safari's bars move. */
+  body::before {
+    content: '';
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100lvh;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--scene) center bottom / cover no-repeat, hsl(var(--background));
+    transition: opacity 0.4s ease;
+  }
+
+  /* iOS Safari zooms the page when a focused field is under 16px */
+  @media (pointer: coarse) {
+    input,
+    textarea,
+    select {
+      font-size: max(16px, 1em) !important;
+    }
+  }
+
+  button,
+  [role='button'] {
+    touch-action: manipulation;
   }
 
   ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: hsl(var(--background));
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 4px;
+    background: hsl(var(--hairline) / 0.18);
+    border-radius: 999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground));
+    background: hsl(var(--hairline) / 0.3);
   }
 
   .perspective-1000 {
@@ -105,247 +180,242 @@
   transition: none !important;
 }
 
-.noise {
-  position: fixed;
-  inset: -200%;
-  z-index: 9999;
-  background-image: url("https://grainy-gradients.vercel.app/noise.svg");
-  opacity: 0.05;
-  pointer-events: none;
-  mix-blend-mode: overlay;
+/* ══════════════════════════════
+   LAYOUT HELPERS (iOS / PWA)
+══════════════════════════════ */
+.h-app {
+  height: 100vh;
+  height: 100dvh;
 }
 
-.light .noise {
-  opacity: 0.03;
+.min-h-app {
+  min-height: 100vh;
+  min-height: 100dvh;
 }
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Room for the mobile bottom nav (4.5rem) plus the home indicator */
+.pb-nav {
+  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+}
+
+.bottom-nav-offset {
+  bottom: calc(5.25rem + env(safe-area-inset-bottom));
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Glass + type classes live in the components layer so they accept variants
+   (md:surface, max-md:glass-nav) and utilities can still override them. */
+@layer components {
 
 /* ══════════════════════════════
-   GLASS — dark mode
+   LIQUID GLASS
+   - .surface       regular glass: content panels (tiles, columns, sidebar)
+   - .glass-chrome  clear glass: floating controls (tab bar, pills, dock)
+   - .surface-solid near-opaque glass for dense text (dialogs, notes)
+   - .lg-ink        glossy ink button (primary actions)
+   - .lg-rim        rim light only, for elements that bring their own fill
+   Every variant gets the specular rim (::before) and the top sheen.
 ══════════════════════════════ */
-.glass {
-  background: hsl(0 0% 100% / 0.03);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid hsl(0 0% 100% / 0.1);
-  box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.02);
-}
-
-.light .glass {
-  background: hsl(0 0% 100% / 0.5);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid hsl(240 10% 88%);
-  box-shadow: 0 4px 12px hsl(240 20% 0% / 0.02);
-}
-
-/* ══════════════════════════════
-   GLASS NAV — dark mode
-══════════════════════════════ */
-.glass-nav {
-  background: hsl(240 20% 4% / 0.7);
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  border-bottom: 1px solid hsl(240 30% 100% / 0.05);
-}
-
-.light .glass-nav {
-  background: hsl(0 0% 100% / 0.75);
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  border-bottom: 1px solid hsl(240 10% 90%);
-}
-
-/* ══════════════════════════════
-   SAAS CARD — dark mode
-══════════════════════════════ */
-.saas-card {
-  background: linear-gradient(135deg, hsl(240 16% 9%), hsl(240 16% 7%));
-  border: 1px solid hsl(240 30% 100% / 0.06);
-  box-shadow:
-    0 12px 40px -12px hsl(240 20% 0% / 0.5),
-    inset 0 1px 1px hsl(0 0% 100% / 0.03);
-}
-
-.light .saas-card {
-  background: hsl(var(--card));
-  border: 1px solid hsl(240 10% 88%);
-  box-shadow:
-    0 2px 8px hsl(240 20% 0% / 0.01),
-    0 16px 40px -12px hsl(240 20% 0% / 0.06);
-}
-
-/* ══════════════════════════════
-   GRADIENT BUTTON — both modes
-══════════════════════════════ */
-.btn-gradient {
-  background: linear-gradient(135deg, hsl(262 83% 65%), hsl(262 80% 55%));
-  color: white;
+.surface,
+.saas-card,
+.glass,
+.glass-chrome,
+.surface-solid,
+.lg-ink,
+.lg-rim {
   position: relative;
-  overflow: hidden;
-  box-shadow:
-    0 0 0 1px hsl(262 83% 65% / 0.2),
-    0 8px 24px -8px hsl(262 83% 65% / 0.5);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  isolation: isolate;
 }
 
-.btn-gradient::after {
-  content: "";
+.surface,
+.saas-card,
+.glass,
+.glass-chrome,
+.surface-solid,
+.lg-rim {
+  box-shadow:
+    inset 0 1px 1px hsl(0 0% 100% / var(--lg-rim-strong)),
+    inset 0 -1px 1px hsl(0 0% 100% / var(--lg-rim-soft)),
+    inset 0 12px 24px -16px hsl(0 0% 100% / var(--lg-inner)),
+    0 0 0 0.5px hsl(222 30% 15% / var(--lg-outline)),
+    0 18px 44px -24px hsl(222 45% 10% / var(--glass-shadow)),
+    0 2px 6px -3px hsl(222 45% 10% / var(--glass-shadow));
+}
+
+.surface,
+.saas-card {
+  background:
+    linear-gradient(172deg, hsl(0 0% 100% / var(--lg-sheen)) 0%, hsl(0 0% 100% / 0) 36%),
+    hsl(var(--glass) / var(--glass-alpha));
+  -webkit-backdrop-filter: var(--lg-backdrop);
+  backdrop-filter: var(--lg-backdrop);
+}
+
+.glass,
+.glass-chrome {
+  background:
+    linear-gradient(172deg, hsl(0 0% 100% / var(--lg-sheen)) 0%, hsl(0 0% 100% / 0) 48%),
+    hsl(var(--glass) / var(--glass-chrome-alpha));
+  -webkit-backdrop-filter: var(--lg-backdrop-clear);
+  backdrop-filter: var(--lg-backdrop-clear);
+}
+
+.surface-solid {
+  background:
+    linear-gradient(172deg, hsl(0 0% 100% / calc(var(--lg-sheen) * 0.6)) 0%, hsl(0 0% 100% / 0) 30%),
+    hsl(var(--card) / 0.9);
+  -webkit-backdrop-filter: var(--lg-backdrop);
+  backdrop-filter: var(--lg-backdrop);
+}
+
+/* Specular rim: bright at the top-left and bottom-right corners, fading along the sides */
+.surface::before,
+.saas-card::before,
+.glass::before,
+.glass-chrome::before,
+.surface-solid::before,
+.lg-ink::before,
+.lg-rim::before {
+  content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.15), transparent);
-  transform: translateX(-100%);
-  transition: transform 0.6s ease;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg,
+      hsl(0 0% 100% / var(--lg-rim-strong)) 0%,
+      hsl(0 0% 100% / var(--lg-rim-soft)) 22%,
+      hsl(0 0% 100% / 0.02) 48%,
+      hsl(0 0% 100% / var(--lg-rim-soft)) 76%,
+      hsl(0 0% 100% / calc(var(--lg-rim-strong) * 0.75)) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
-.btn-gradient:hover::after {
-  transform: translateX(100%);
-}
-
-.btn-gradient:hover {
+/* Glossy ink: dark glass in day mode, light glass at night */
+.lg-ink {
+  background:
+    linear-gradient(180deg, hsl(0 0% 100% / 0.18) 0%, hsl(0 0% 100% / 0) 55%),
+    hsl(var(--foreground));
+  color: hsl(var(--background));
   box-shadow:
-    0 0 0 1px hsl(262 83% 65% / 0.3),
-    0 12px 32px -8px hsl(262 83% 65% / 0.6);
-  transform: translateY(-2px);
+    inset 0 1px 1px hsl(0 0% 100% / 0.4),
+    inset 0 -1px 1px hsl(0 0% 100% / 0.08),
+    0 12px 28px -12px hsl(222 45% 10% / 0.65);
+  transition: filter 0.2s ease, transform 0.2s ease;
 }
 
-.btn-gradient:active {
-  transform: scale(0.97) translateY(0);
+.lg-ink::before {
+  --lg-rim-strong: 0.6;
+  --lg-rim-soft: 0.08;
 }
 
-/* Light: slightly stronger shadow since bg is light */
-.light .btn-gradient {
-  box-shadow:
-    0 0 0 1px hsl(262 83% 52% / 0.3),
-    0 4px 16px hsl(262 83% 52% / 0.25);
+.lg-ink:hover {
+  filter: brightness(1.15);
+}
+
+.lg-ink:active {
+  transform: scale(0.97);
+}
+
+/* Edge-to-edge bars (phone header): clear glass with a hairline, no rim */
+.glass-nav {
+  background:
+    linear-gradient(180deg, hsl(0 0% 100% / calc(var(--lg-sheen) * 0.5)) 0%, hsl(0 0% 100% / 0) 100%),
+    hsl(var(--glass) / var(--glass-chrome-alpha));
+  border-bottom: 1px solid hsl(var(--hairline) / 0.08);
+  -webkit-backdrop-filter: var(--lg-backdrop-clear);
+  backdrop-filter: var(--lg-backdrop-clear);
 }
 
 /* ══════════════════════════════
-   SECTION BADGE
+   TYPE ACCENTS
 ══════════════════════════════ */
+
+/* Small monospace section label: "● LIVE SYNC", "MENU", "ASISTEN · SARAN" */
+.eyebrow {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
 .badge-section {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 12px;
-  border-radius: 999px;
-  background: hsl(262 83% 65% / 0.12);
-  border: 1px solid hsl(262 83% 65% / 0.25);
-  color: hsl(262 83% 60%);
-  /* readable in both modes */
+  gap: 8px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  font-weight: 500;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+  color: hsl(var(--foreground) / 0.75);
 }
 
-/* Light: even darker text for badge */
-.light .badge-section {
-  background: hsl(262 83% 52% / 0.1);
-  border-color: hsl(262 83% 52% / 0.2);
-  color: hsl(262 83% 40%);
-}
-
-/* ══════════════════════════════
-   GRADIENT TEXT
-══════════════════════════════ */
-
-/* Dark: white → light purple → light blue */
 .text-gradient {
-  background: linear-gradient(135deg, #ffffff 0%, hsl(262 83% 84%) 60%, hsl(221 83% 78%) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: hsl(var(--foreground));
 }
 
-/* Light: dark charcoal → dark purple → dark blue (readable on white) */
-.light .text-gradient {
-  background: linear-gradient(135deg, hsl(240 6% 15%) 0%, hsl(262 83% 42%) 60%, hsl(221 83% 40%) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Dark */
 .text-gradient-purple {
-  background: linear-gradient(135deg, hsl(262 83% 74%), hsl(221 83% 70%));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Light: much darker so visible on white */
-.light .text-gradient-purple {
-  background: linear-gradient(135deg, hsl(262 83% 42%), hsl(221 83% 40%));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: hsl(var(--leaf));
 }
 
 /* ══════════════════════════════
-   WHITEBOARD THEME
-   ══════════════════════════════ */
+   BUTTONS
+══════════════════════════════ */
+.btn-gradient {
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 24px -14px hsl(222 45% 12% / 0.6);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-gradient:hover {
+  background: hsl(var(--foreground) / 0.88);
+  transform: translateY(-1px);
+}
+
+.btn-gradient:active {
+  transform: scale(0.98);
+}
+
+}
+
+/* ══════════════════════════════
+   LEGACY HELPERS (still referenced)
+══════════════════════════════ */
 .bg-board {
-  background-color: hsl(var(--background));
-  transition: background-color 0.5s ease;
+  background-color: transparent;
 }
 
-.dark .bg-board {
-  background-color: hsl(222 47% 4%);
-}
-
-.bg-board::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image: radial-gradient(circle, hsl(var(--foreground) / 0.08) 1.5px, transparent 1.5px);
-  background-size: 32px 32px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ══════════════════════════════
-   3D STICKY NOTES (Miro Style)
-   ══════════════════════════════ */
 .sticky-note-3d {
   position: relative;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  transform-style: preserve-3d;
-  box-shadow: 
-    0 1px 1px hsl(0 0% 0% / 0.05),
-    0 2px 2px hsl(0 0% 0% / 0.05),
-    0 4px 4px hsl(0 0% 0% / 0.05),
-    0 8px 8px hsl(0 0% 0% / 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .sticky-note-3d:hover {
-  transform: translateY(-6px) scale(1.01) rotate(0.5deg);
-  box-shadow: 
-    0 10px 20px -10px hsl(var(--primary) / 0.2),
-    0 20px 40px -20px hsl(var(--primary) / 0.1);
-}
-
-.sticky-note-3d::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 24px;
-  height: 24px;
-  background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.03) 50%);
-  border-bottom-right-radius: 12px;
-  pointer-events: none;
-}
-
-.noise {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  opacity: 0.03;
-  z-index: 9999;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px -16px hsl(222 45% 12% / 0.35);
 }
 
 /* ══════════════════════════════
@@ -374,7 +444,6 @@
 }
 
 @keyframes floatY {
-
   0%,
   100% {
     transform: translateY(0);
@@ -386,7 +455,6 @@
 }
 
 @keyframes glowPulse {
-
   0%,
   100% {
     opacity: 0.2;
@@ -446,17 +514,17 @@
 }
 
 .interactive-card:hover {
-  border-color: hsl(var(--primary) / 0.5);
-  box-shadow:
-    0 20px 40px -15px hsl(var(--primary) / 0.15),
-    0 0 0 1px hsl(var(--primary) / 0.2);
-  transform: translateY(-4px) scale(1.01);
+  border-color: hsl(var(--primary) / 0.4);
+  box-shadow: 0 20px 40px -22px hsl(222 45% 12% / 0.35);
+  transform: translateY(-3px);
 }
 
-.light .interactive-card:hover {
-  border-color: hsl(var(--primary) / 0.6);
-  box-shadow:
-    0 20px 40px -15px hsl(var(--primary) / 0.2),
-    0 0 25px hsl(var(--primary) / 0.08);
-  transform: translateY(-4px) scale(1.01);
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

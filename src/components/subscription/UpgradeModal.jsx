@@ -173,7 +173,7 @@ export function UpgradeModal({ open, onClose, user }) {
         {/* Progress bar */}
         <div className="h-1 bg-secondary">
           <div
-            className="h-full bg-gradient-to-r from-primary to-violet-400 transition-all duration-500"
+            className="h-full bg-primary transition-all duration-500"
             style={{ width: `${(step / 4) * 100}%` }}
           />
         </div>
@@ -232,8 +232,7 @@ export function UpgradeModal({ open, onClose, user }) {
               </div>
 
               {/* Kartu harga */}
-              <div className="relative p-5 rounded-2xl bg-gradient-to-br from-primary/15 via-violet-500/10 to-purple-500/10 border border-primary/30 overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
+              <div className="lg-rim p-5 rounded-[22px] bg-primary/10 overflow-hidden">
                 <div className="relative">
                   <div className="flex items-start gap-3 mb-3">
                     <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center">
@@ -274,7 +273,7 @@ export function UpgradeModal({ open, onClose, user }) {
               </div>
 
               <Button
-                className="w-full bg-gradient-to-r from-primary to-violet-500 hover:opacity-90 shadow-lg shadow-primary/20"
+                className="w-full rounded-full"
                 size="lg"
                 onClick={() => setStep(2)}
               >

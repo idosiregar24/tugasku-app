@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,8 +8,10 @@ import { Loader2, UserPlus, Mail, Lock, CheckCircle } from 'lucide-react'
 
 export function RegisterForm() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [form, setForm] = useState({
-    email: '',
+    // Pre-filled when coming from the landing page email field
+    email: typeof location.state?.email === 'string' ? location.state.email : '',
     password: '',
     confirmPassword: '',
   })

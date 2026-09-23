@@ -11,12 +11,12 @@ import {
   Download,
   Shield,
   ArrowRight,
-  LayoutDashboard,
   X,
   Mail,
   Code2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { BrandMark } from '@/components/layout/BrandMark'
 import { PRO_PRICE_MONTHLY, PRO_PRICE_ANNUAL } from '@/hooks/useProfile'
 import { cn } from '@/lib/utils'
 
@@ -79,23 +79,13 @@ export function PricingPage() {
   const savingPercent = Math.round((1 - PRO_PRICE_ANNUAL / 12 / PRO_PRICE_MONTHLY) * 100)
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Ambient glow */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-primary/6 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-[500px] h-[400px] bg-violet-600/5 rounded-full blur-3xl" />
-      </div>
-
+    <div className="min-h-app">
       {/* Navbar */}
-      <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 pt-safe glass-nav">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/dashboard" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center">
-              <LayoutDashboard className="h-4 w-4 text-primary" />
-            </div>
-            <span className="text-lg font-bold bg-gradient-to-r from-primary to-violet-400 bg-clip-text text-transparent">
-              Tugasku
-            </span>
+            <BrandMark className="w-8 h-8" />
+            <span className="text-lg font-semibold tracking-[-0.03em] text-foreground">Tugasku</span>
           </Link>
 
           <div className="flex items-center gap-3">
@@ -107,7 +97,7 @@ export function PricingPage() {
             <Button
               size="sm"
               onClick={() => navigate('/dashboard')}
-              className="flex items-center gap-1.5"
+              className="flex items-center gap-1.5 rounded-full px-4"
             >
               <Crown className="h-3.5 w-3.5" />
               Upgrade Sekarang
@@ -119,29 +109,26 @@ export function PricingPage() {
       <main className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16">
         {/* Hero */}
         <div className="text-center mb-14 animate-fade-in">
-          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 mb-6">
-            <Zap className="h-3.5 w-3.5 text-primary" />
-            <span className="text-xs font-medium text-primary">Pilih Plan Yang Tepat</span>
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
-            Raih Produktivitas{' '}
-            <span className="bg-gradient-to-r from-primary to-violet-400 bg-clip-text text-transparent">
-              Maksimal
-            </span>
+          <p className="badge-section justify-center mb-5">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" /> <Zap className="h-3.5 w-3.5" /> Pilih plan yang tepat
+          </p>
+          <h1 className="text-4xl sm:text-6xl font-semibold tracking-[-0.04em] text-foreground mb-4">
+            Raih produktivitas{' '}
+            <span className="text-leaf">maksimal.</span>
           </h1>
-          <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+          <p className="text-lg text-foreground/70 max-w-xl mx-auto">
             Mulai gratis, upgrade saat butuh lebih. Tidak ada biaya tersembunyi.
           </p>
 
           {/* Billing toggle */}
-          <div className="inline-flex items-center gap-1 mt-8 p-1 bg-secondary rounded-xl border border-border">
+          <div className="glass-chrome inline-flex items-center gap-1 mt-8 p-1 rounded-full">
             <button
               onClick={() => setBilling('monthly')}
               className={cn(
-                'px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+                'px-5 py-2 rounded-full text-sm font-medium transition-all duration-200',
                 billing === 'monthly'
-                  ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'lg-rim bg-card/90 text-foreground'
+                  : 'text-foreground/70 hover:text-foreground'
               )}
             >
               Bulanan
@@ -149,14 +136,14 @@ export function PricingPage() {
             <button
               onClick={() => setBilling('annual')}
               className={cn(
-                'px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2',
+                'px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2',
                 billing === 'annual'
-                  ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'lg-rim bg-card/90 text-foreground'
+                  : 'text-foreground/70 hover:text-foreground'
               )}
             >
               Tahunan
-              <span className="text-xs bg-green-400/15 text-green-400 border border-green-400/25 px-2 py-0.5 rounded-full font-semibold">
+              <span className="text-xs bg-success/15 text-success border border-success/25 px-2 py-0.5 rounded-full font-semibold">
                 Hemat {savingPercent}%
               </span>
             </button>
@@ -166,7 +153,7 @@ export function PricingPage() {
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16 max-w-3xl mx-auto">
           {/* Free Plan */}
-          <div className="bg-card border border-border rounded-2xl p-6 flex flex-col">
+          <div className="surface rounded-[28px] p-6 flex flex-col">
             <div className="mb-6">
               <h2 className="text-lg font-bold text-foreground mb-1">Free</h2>
               <p className="text-sm text-muted-foreground">Untuk penggunaan personal dasar</p>
@@ -202,13 +189,10 @@ export function PricingPage() {
           </div>
 
           {/* Pro Plan */}
-          <div className="relative bg-gradient-to-br from-primary/10 via-violet-500/8 to-purple-500/5 border border-primary/40 rounded-2xl p-6 flex flex-col overflow-hidden shadow-xl shadow-primary/10">
-            {/* Glow */}
-            <div className="absolute top-0 right-0 w-40 h-40 bg-primary/15 rounded-full blur-3xl" />
-
+          <div className="surface rounded-[28px] p-6 flex flex-col overflow-hidden ring-2 ring-primary/40">
             {/* Badge */}
             <div className="absolute top-4 right-4">
-              <span className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-amber-400/20 text-amber-400 border border-amber-400/30">
+              <span className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-amber-400/20 text-amber-700 dark:text-amber-400 border border-amber-500/30">
                 <Crown className="h-3 w-3" />
                 POPULER
               </span>
@@ -260,10 +244,7 @@ export function PricingPage() {
             </div>
 
             <Link to="/dashboard" className="relative">
-              <Button
-                className="w-full bg-gradient-to-r from-primary to-violet-500 hover:from-primary/90 hover:to-violet-500/90 shadow-lg shadow-primary/20"
-                size="lg"
-              >
+              <Button className="w-full rounded-full" size="lg">
                 <Crown className="h-4 w-4 mr-2" />
                 Upgrade ke Pro — {formatRupiah(price)}
                 <ArrowRight className="h-4 w-4 ml-1" />
@@ -277,7 +258,7 @@ export function PricingPage() {
           <h2 className="text-2xl font-bold text-foreground text-center mb-8">
             Perbandingan Lengkap
           </h2>
-          <div className="bg-card border border-border rounded-2xl overflow-hidden max-w-3xl mx-auto">
+          <div className="surface rounded-[28px] overflow-hidden max-w-3xl mx-auto">
             <div className="grid grid-cols-3 gap-0">
               <div className="p-4 border-b border-border" />
               <div className="p-4 border-b border-border text-center">
@@ -326,7 +307,7 @@ export function PricingPage() {
             {FAQ.map((item, i) => (
               <div
                 key={i}
-                className="bg-card border border-border rounded-xl overflow-hidden"
+                className="surface rounded-[20px] overflow-hidden"
               >
                 <button
                   className="w-full flex items-center justify-between p-4 text-left"
@@ -354,7 +335,7 @@ export function PricingPage() {
 
         {/* CTA bottom */}
         <div className="text-center">
-          <div className="inline-block p-8 rounded-2xl bg-gradient-to-br from-primary/10 to-violet-500/8 border border-primary/20">
+          <div className="surface inline-block p-8 rounded-[28px]">
             <h2 className="text-2xl font-bold text-foreground mb-2">
               Siap meningkatkan produktivitas?
             </h2>
@@ -362,10 +343,7 @@ export function PricingPage() {
               Bergabung dengan ribuan pengguna Tugasku Pro
             </p>
             <Link to="/dashboard">
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-primary to-violet-500 shadow-lg shadow-primary/20"
-              >
+              <Button size="lg" className="rounded-full">
                 <Crown className="h-4 w-4 mr-2" />
                 Mulai Upgrade Sekarang
               </Button>
@@ -375,15 +353,13 @@ export function PricingPage() {
       </main>
 
       {/* ── Footer Developer ── */}
-      <footer className="relative border-t border-border bg-background/60 backdrop-blur-sm">
+      <footer className="relative glass-nav">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
 
             {/* Brand */}
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-violet-400 flex items-center justify-center shadow-lg shadow-primary/20">
-                <span className="text-sm font-bold text-white">T</span>
-              </div>
+              <BrandMark className="w-9 h-9" />
               <div>
                 <p className="text-sm font-bold text-foreground">Tugasku</p>
                 <p className="text-xs text-muted-foreground">Manajemen Tugas Modern</p>

@@ -4,8 +4,8 @@ import { supabase } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { Loader2, Mail, ArrowLeft, CheckCircle2, LayoutDashboard } from 'lucide-react'
+import { AuthShell } from '@/components/auth/AuthShell'
+import { Loader2, Mail, ArrowLeft, CheckCircle2 } from 'lucide-react'
 
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -32,35 +32,13 @@ export function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden py-12 px-4">
-      {/* Background glow effects */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-primary/8 rounded-full blur-3xl" />
-      </div>
-
-      <div className="relative w-full max-w-md animate-fade-in">
-        {/* Brand logo */}
-        <div className="flex justify-center mb-8">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center shadow-lg shadow-primary/20">
-              <LayoutDashboard className="h-5 w-5 text-primary" />
-            </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-violet-400 to-purple-300 bg-clip-text text-transparent">
-              Tugasku
-            </h1>
-          </Link>
-        </div>
-
-        <Card className="border-border/50 bg-card/70 backdrop-blur-md shadow-2xl">
-          <CardHeader className="text-center space-y-1 pb-4">
-            <CardTitle className="text-2xl">Lupa Password?</CardTitle>
-            <CardDescription>
-              {success 
-                ? 'Instruksi pemulihan telah dikirim ke email kamu.' 
-                : 'Masukkan email kamu untuk mengatur ulang password.'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+    <AuthShell
+      eyebrow="Pemulihan akun"
+      title={<>Lupa <span className="text-leaf">password?</span></>}
+      description={success
+        ? 'Instruksi pemulihan telah dikirim ke email kamu.'
+        : 'Masukkan email kamu untuk mengatur ulang password.'}
+    >
             {success ? (
               <div className="space-y-6 text-center animate-fade-in">
                 <div className="flex justify-center">
@@ -117,9 +95,6 @@ export function ForgotPasswordPage() {
                 </div>
               </form>
             )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+    </AuthShell>
   )
 }

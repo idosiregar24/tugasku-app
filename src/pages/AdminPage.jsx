@@ -64,7 +64,7 @@ function StatusBadge({ status }) {
 function StatCard({ icon, label, value, colorClass, note }) {
   const Icon = icon
   return (
-    <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
+    <div className="surface rounded-[20px] p-4 flex items-center gap-4">
       <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${colorClass}`}>
         <Icon className="h-5 w-5" />
       </div>
@@ -105,7 +105,7 @@ function PaymentRow({ record, onConfirm, onReject }) {
   if (done) return null // remove row after action
 
   return (
-    <div className="p-4 bg-card border border-border rounded-xl space-y-3 animate-fade-in">
+    <div className="p-4 surface rounded-[20px] space-y-3 animate-fade-in">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="space-y-1 min-w-0">
           <p className="text-sm font-semibold text-foreground truncate">
@@ -233,7 +233,7 @@ export function AdminPage() {
   // ── Guard: wait for profile ──────────────────────────────────────────────
   if (profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-app flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
@@ -251,14 +251,9 @@ export function AdminPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Ambient glow */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 right-0 w-[600px] h-[400px] bg-violet-600/4 rounded-full blur-3xl" />
-      </div>
-
+    <div className="min-h-app">
       {/* ── Header ── */}
-      <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 pt-safe glass-nav">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-amber-400/20 border border-amber-400/30 flex items-center justify-center">
@@ -385,7 +380,7 @@ export function AdminPage() {
 
           {/* ── TAB: Riwayat ── */}
           {!loading && activeTab === 'history' && (
-            <div className="bg-card border border-border rounded-2xl overflow-hidden">
+            <div className="surface rounded-[24px] overflow-hidden">
               {history.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <Banknote className="h-10 w-10 mx-auto mb-3 opacity-30" />
@@ -431,7 +426,7 @@ export function AdminPage() {
 
           {/* ── TAB: Users ── */}
           {!loading && activeTab === 'users' && (
-            <div className="bg-card border border-border rounded-2xl overflow-hidden">
+            <div className="surface rounded-[24px] overflow-hidden">
               {users.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <Users className="h-10 w-10 mx-auto mb-3 opacity-30" />

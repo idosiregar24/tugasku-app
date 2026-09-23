@@ -1,176 +1,181 @@
 import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { motion } from 'framer-motion'
 import { format, differenceInDays, parseISO } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
-import { Trash2, GripVertical, Clock, AlertTriangle, CalendarCheck } from 'lucide-react'
+import { Trash2, GripVertical, Clock, AlertTriangle, CalendarCheck, Circle, CheckCircle2, Repeat } from 'lucide-react'
 import { priorityConfig } from '@/lib/constants'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 
+const NEXT_STATUS = { todo: 'finished', finished: 'done', done: 'todo' }
+const STATUS_ACTION = { todo: 'Tandai sudah dikerjakan', finished: 'Tandai sudah submit', done: 'Buka lagi' }
+
 function DeadlineLabel({ deadline }) {
-  // Parse YYYY-MM-DD from Supabase date column
   const deadlineDate = parseISO(deadline)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const diffDays = differenceInDays(deadlineDate, today)
-  const formatted = format(deadlineDate, 'dd MMM yyyy', { locale: localeId })
+  const formatted = format(deadlineDate, 'dd MMM', { locale: localeId })
 
   if (diffDays < 0) {
     return (
-      <div className="flex items-center gap-1 text-red-400">
+      <span className="inline-flex items-center gap-1 text-red-600 dark:text-red-400">
         <AlertTriangle className="w-3 h-3 shrink-0" />
         <span className="text-xs font-semibold">Terlambat {Math.abs(diffDays)} hari</span>
-        <span className="text-xs text-red-400/60">· {formatted}</span>
-      </div>
+      </span>
     )
   }
-
   if (diffDays === 0) {
     return (
-      <div className="flex items-center gap-1 text-amber-400">
+      <span className="inline-flex items-center gap-1 text-warning">
         <Clock className="w-3 h-3 shrink-0" />
-        <span className="text-xs font-semibold">Hari ini!</span>
-        <span className="text-xs text-amber-400/60">· {formatted}</span>
-      </div>
+        <span className="text-xs font-semibold">Hari ini</span>
+      </span>
     )
   }
-
   if (diffDays <= 3) {
     return (
-      <div className="flex items-center gap-1 text-orange-400">
+      <span className="inline-flex items-center gap-1 text-orange-600 dark:text-orange-400">
         <Clock className="w-3 h-3 shrink-0" />
-        <span className="text-xs font-medium">{diffDays} hari lagi</span>
-        <span className="text-xs text-orange-400/60">· {formatted}</span>
-      </div>
+        <span className="text-xs font-medium">{diffDays} hari lagi · {formatted}</span>
+      </span>
     )
   }
-
   return (
-    <div className="flex items-center gap-1 text-muted-foreground">
+    <span className="inline-flex items-center gap-1 text-muted-foreground">
       <CalendarCheck className="w-3 h-3 shrink-0" />
-      <span className="text-xs">{diffDays} hari lagi · {formatted}</span>
-    </div>
+      <span className="text-xs">{formatted}</span>
+    </span>
   )
 }
 
+function StatusIcon({ status }) {
+  if (status === 'done') return <CheckCircle2 className="w-[22px] h-[22px] text-success" />
+  if (status === 'finished') return <Clock className="w-[22px] h-[22px] text-warning" />
+  return <Circle className="w-[22px] h-[22px]" />
+}
+
 /**
- * Draggable task card with priority border, deadline label, and delete button (with confirm)
- * @param {{ task: import('@/types').Task, onDelete: (id: string) => void, onOpenDetail?: (task: import('@/types').Task) => void, isOverlay?: boolean }} props
+ * Draggable task card with one-tap status progression and a two-step delete.
+ * @param {{ task: import('@/types').Task, onDelete: (id: string) => void, onOpenDetail?: (task: import('@/types').Task) => void, onStatusChange?: (task: import('@/types').Task, status: string) => void, isOverlay?: boolean, draggable?: boolean }} props
  */
-export function TaskCard({ task, onDelete, onOpenDetail, isOverlay = false }) {
+export function TaskCard({ task, onDelete, onOpenDetail, onStatusChange, isOverlay = false, draggable = true }) {
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const resetTimer = useRef(null)
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
     data: { task, status: task.status },
-    disabled: isOverlay,
+    disabled: isOverlay || !draggable,
   })
 
-  const config = priorityConfig[task.priority] ?? priorityConfig.Medium
+  useEffect(() => () => clearTimeout(resetTimer.current), [])
 
-  const style = isOverlay
-    ? {}
-    : { transform: CSS.Translate.toString(transform) }
+  const config = priorityConfig[task.priority] ?? priorityConfig.Medium
+  const style = isOverlay ? {} : { transform: CSS.Translate.toString(transform) }
 
   const handleDeleteClick = (e) => {
     e.stopPropagation()
     if (!confirmDelete) {
       setConfirmDelete(true)
-      // Auto-reset after 3 seconds
-      setTimeout(() => setConfirmDelete(false), 3000)
+      clearTimeout(resetTimer.current)
+      resetTimer.current = setTimeout(() => setConfirmDelete(false), 3000)
       return
     }
     onDelete(task.id)
   }
 
+  const handleStatusClick = (e) => {
+    e.stopPropagation()
+    onStatusChange?.(task, NEXT_STATUS[task.status] ?? 'todo')
+  }
+
   return (
-    <motion.div
+    <div
       ref={isOverlay ? undefined : setNodeRef}
       style={style}
-      onClick={() => !isOverlay && onOpenDetail && onOpenDetail(task)}
-      whileHover={!isOverlay ? { y: -4, scale: 1.02, rotate: 0.2 } : {}}
+      onClick={() => !isOverlay && onOpenDetail?.(task)}
       className={cn(
-        'group relative rounded-[20px] p-4 border transition-all duration-500',
-        'bg-card/40 backdrop-blur-xl border-white/10 dark:border-white/5',
-        'shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)]',
-        'hover:border-primary/40',
+        'lg-rim group rounded-2xl p-3.5 pl-3 border border-l-[3px] transition-[transform,box-shadow,border-color,opacity] duration-200',
+        'bg-card/85 border-hairline/[0.06] shadow-[0_6px_18px_-14px_hsl(222_45%_12%/0.5)]',
+        'hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_16px_32px_-18px_hsl(222_45%_12%/0.45)]',
         config.border,
-        isDragging && !isOverlay ? 'opacity-30 scale-[0.98]' : '',
-        isOverlay ? 'shadow-2xl shadow-black/60 scale-[1.05] cursor-grabbing border-primary/50 bg-card/90' : 'cursor-pointer'
+        isDragging && !isOverlay && 'opacity-30',
+        isOverlay ? 'shadow-2xl shadow-black/60 scale-[1.03] cursor-grabbing border-primary/50 bg-card' : 'cursor-pointer active:scale-[0.99]'
       )}
     >
-      {/* Decorative Glow */}
-      <div className="absolute inset-0 rounded-[20px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" 
-        style={{ background: `radial-gradient(circle at top right, hsl(var(--primary) / 0.05), transparent 70%)` }} />
       <div className="flex items-start gap-2.5">
-        {/* Drag handle — stopPropagation so card click (open modal) isn't triggered */}
-        {!isOverlay && (
+        {onStatusChange && !isOverlay && (
           <button
-            {...attributes}
-            {...listeners}
-            onClick={(e) => e.stopPropagation()}
-            className="mt-0.5 shrink-0 touch-none p-0.5 rounded text-muted-foreground/40 hover:text-muted-foreground transition-colors"
-            aria-label="Drag task"
+            onClick={handleStatusClick}
+            className="-m-1.5 p-1.5 shrink-0 rounded-full text-muted-foreground/70 hover:text-primary transition-colors"
+            aria-label={STATUS_ACTION[task.status]}
+            title={STATUS_ACTION[task.status]}
           >
-            <GripVertical className="w-4 h-4" />
+            <StatusIcon status={task.status} />
           </button>
         )}
 
-        {/* Card content */}
         <div className="flex-1 min-w-0">
           <p
-            className={`text-sm font-semibold leading-snug tracking-tight ${task.status === 'done'
-                ? 'line-through text-muted-foreground'
-                : 'text-foreground'
-              }`}
+            className={cn(
+              'text-[15px] sm:text-sm font-semibold leading-snug tracking-tight break-words',
+              task.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'
+            )}
           >
             {task.title}
           </p>
-          <div className="mt-3 flex items-center gap-2 flex-wrap">
-            {/* Status badge if finished */}
+          <div className="mt-2 flex items-center gap-x-2.5 gap-y-1.5 flex-wrap">
             {task.status === 'finished' && (
-              <span className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-md bg-amber-400/15 text-amber-400 border border-amber-400/20 font-black uppercase tracking-widest">
-                <Clock className="w-2.5 h-2.5" />
+              <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md bg-warning/15 text-warning border border-warning/20 font-bold uppercase tracking-wide">
                 Belum Submit
               </span>
             )}
-            {/* Priority badge */}
-            <span
-              className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border font-bold uppercase tracking-wider ${config.badge}`}
-            >
-              <span className={`w-1 h-1 rounded-full ${config.dot}`} />
+            <span className={cn('inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border font-bold uppercase tracking-wide', config.badge)}>
+              <span className={cn('w-1.5 h-1.5 rounded-full', config.dot)} />
               {task.priority}
             </span>
-            {/* Deadline */}
             <DeadlineLabel deadline={task.deadline} />
+            {task.is_recurring && <Repeat className="w-3 h-3 text-primary" aria-label="Berulang" />}
           </div>
         </div>
 
-        {/* Delete button with confirm */}
         {!isOverlay && (
-          <button
-            id={`delete-task-${task.id}`}
-            onClick={handleDeleteClick}
-            className={[
-              'shrink-0 transition-all duration-150 p-1.5 rounded-lg text-xs font-semibold',
-              confirmDelete
-                ? 'opacity-100 bg-destructive/20 text-destructive border border-destructive/30 px-2 scale-110'
-                : 'opacity-0 group-hover:opacity-100 hover:bg-destructive/15 hover:text-destructive text-muted-foreground/40',
-            ].join(' ')}
-            aria-label={confirmDelete ? 'Konfirmasi hapus' : `Hapus tugas: ${task.title}`}
-          >
-            {confirmDelete ? (
-              <span className="flex items-center gap-1">
-                <Trash2 className="w-3 h-3" />
-                Hapus?
-              </span>
-            ) : (
-              <Trash2 className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-0.5 -mr-1 -mt-1">
+            <button
+              id={`delete-task-${task.id}`}
+              onClick={handleDeleteClick}
+              className={cn(
+                'shrink-0 transition-all duration-150 p-2 rounded-xl text-xs font-semibold',
+                confirmDelete
+                  ? 'bg-destructive/15 text-destructive border border-destructive/30 px-2.5'
+                  : 'text-muted-foreground/60 hover:bg-destructive/15 hover:text-destructive [@media(hover:hover)_and_(pointer:fine)]:opacity-0 group-hover:opacity-100 focus-visible:opacity-100'
+              )}
+              aria-label={confirmDelete ? 'Konfirmasi hapus' : `Hapus tugas: ${task.title}`}
+            >
+              {confirmDelete ? (
+                <span className="flex items-center gap-1">
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Hapus?
+                </span>
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+            </button>
+            {draggable && (
+              <button
+                {...attributes}
+                {...listeners}
+                onClick={(e) => e.stopPropagation()}
+                className="hidden lg:block shrink-0 touch-none p-2 rounded-xl text-muted-foreground/40 hover:text-muted-foreground cursor-grab active:cursor-grabbing transition-colors"
+                aria-label="Seret tugas"
+              >
+                <GripVertical className="w-4 h-4" />
+              </button>
             )}
-          </button>
+          </div>
         )}
       </div>
-    </motion.div>
+    </div>
   )
 }

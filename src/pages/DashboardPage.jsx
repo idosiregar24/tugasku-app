@@ -1,15 +1,17 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
-import { updateProfile } from '@/lib/supabase/profiles'
+import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
 import { useTasks } from '@/hooks/useTasks'
 import { useProfile } from '@/hooks/useProfile'
+import { useAssistant } from '@/hooks/useAssistant'
 import { Sidebar } from '@/components/layout/Sidebar'
+import { MobileNav } from '@/components/layout/MobileNav'
+import { ToolDock } from '@/components/layout/ToolDock'
 import { KanbanBoard } from '@/components/tasks/KanbanBoard'
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { ScheduleForm } from '@/components/tasks/ScheduleForm'
-import { Spotlight } from '@/components/ui/spotlight'
-import { BackgroundBeams } from '@/components/ui/background-beams'
+import { BrandMark } from '@/components/layout/BrandMark'
 import { TaskDetailModal } from '@/components/tasks/TaskDetailModal'
 import { SearchFilter } from '@/components/tasks/SearchFilter'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
@@ -19,6 +21,8 @@ import { ScheduleView } from '@/components/tasks/ScheduleView'
 import { DeveloperModal } from '@/components/layout/DeveloperModal'
 import { FloatingNotepad } from '@/components/layout/FloatingNotepad'
 import { FloatingPomodoro } from '@/components/layout/FloatingPomodoro'
+import { AssistantPanel } from '@/components/assistant/AssistantPanel'
+import { WorkloadChart } from '@/components/insights/WorkloadChart'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -29,26 +33,25 @@ import {
 import {
   Plus,
   Loader2,
-  Sparkles,
   Edit2,
   Check,
   X,
   ChevronDown,
   ChevronUp,
   Search,
-  Bell,
   LayoutDashboard,
   Crown,
   TrendingUp,
-  BarChart3,
-  Calendar,
-  MousePointer2,
   Clock,
   AlertTriangle,
   CheckCircle2,
-  Monitor
+  Monitor,
+  CalendarRange,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+const TABS = ['dashboard', 'schedule', 'analytics']
+const TAB_TITLE = { dashboard: 'Workspace', schedule: 'Jadwal Harian', analytics: 'Insights' }
 
 export function DashboardPage() {
   const { user, signOut } = useAuth()
@@ -68,7 +71,6 @@ export function DashboardPage() {
     doneTasks = [],
     loading,
     isLimitReached,
-    FREE_TASK_LIMIT,
     taskLimit,
     addTask,
     updateTask,
@@ -76,8 +78,13 @@ export function DashboardPage() {
     notifications,
   } = useTasks(user, isPro)
 
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [taskType, setTaskType] = useState('task') // 'task' | 'schedule'
+  // Home-screen shortcuts (manifest.webmanifest) open /dashboard?action=… or ?tab=…
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialAction = searchParams.get('action')
+  const initialTab = searchParams.get('tab')
+
+  const [dialogOpen, setDialogOpen] = useState(initialAction === 'new-task')
+  const [taskType, setTaskType] = useState('task')
   const [selectedTask, setSelectedTask] = useState(null)
   const [upgradeOpen, setUpgradeOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
@@ -85,9 +92,31 @@ export function DashboardPage() {
   const [filterPriorities, setFilterPriorities] = useState([])
   const [sortKey, setSortKey] = useState('created')
   const [showStats, setShowStats] = useState(true)
-  const [activeTab, setActiveTab] = useState('dashboard')
+  const [activeTab, setActiveTab] = useState(TABS.includes(initialTab) ? initialTab : 'dashboard')
   const [developerOpen, setDeveloperOpen] = useState(false)
   const [isTVMode, setIsTVMode] = useState(false)
+  const [assistantOpen, setAssistantOpen] = useState(initialAction === 'assistant')
+  const [notesOpen, setNotesOpen] = useState(false)
+  const [timerOpen, setTimerOpen] = useState(false)
+  const [timerRunning, setTimerRunning] = useState(false)
+
+  useEffect(() => {
+    if (initialAction || initialTab || searchParams.get('source')) {
+      setSearchParams({}, { replace: true })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const firstName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0]
+
+  const assistant = useAssistant({
+    tasks,
+    addTask,
+    updateTask,
+    userName: profile?.full_name || firstName,
+    isPro,
+    taskLimit,
+  })
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -97,20 +126,21 @@ export function DashboardPage() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
   }, [])
 
+  // iPhone Safari has no element fullscreen API; focus mode still works without it
   const toggleTVMode = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(err => console.error(err))
-      setIsTVMode(true)
-    } else {
-      document.exitFullscreen()
+    const root = document.documentElement
+    if (isTVMode) {
+      if (document.fullscreenElement) document.exitFullscreen?.()
       setIsTVMode(false)
+      return
     }
+    setIsTVMode(true)
+    root.requestFullscreen?.().catch(() => {})
   }
 
-  // Editable Quote State
   const [isEditingQuote, setIsEditingQuote] = useState(false)
-  const [userQuote, setUserQuote] = useState(() => 
-    localStorage.getItem('tugasku-quote') || "Fokus pada proses, hasil akan mengikuti. ✨"
+  const [userQuote, setUserQuote] = useState(() =>
+    localStorage.getItem('tugasku-quote') || 'Fokus pada proses, hasil akan mengikuti. ✨'
   )
   const [tempQuote, setTempQuote] = useState(userQuote)
 
@@ -125,71 +155,40 @@ export function DashboardPage() {
 
   const handleOpenDetail = (task) => setSelectedTask(task)
   const handleCloseDetail = () => setSelectedTask(null)
+  const handleOpenTaskById = useCallback(
+    (taskId) => {
+      const task = tasks.find((t) => t.id === taskId)
+      if (task) setSelectedTask(task)
+    },
+    [tasks]
+  )
 
-  const fileInputRef = useRef(null)
-  const [isUploading, setIsUploading] = useState(false)
-
-  const handleAvatarUpload = (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setIsUploading(true)
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      const img = new Image()
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        const MAX_SIZE = 250
-        let width = img.width
-        let height = img.height
-
-        if (width > height) {
-          if (width > MAX_SIZE) {
-            height *= MAX_SIZE / width
-            width = MAX_SIZE
-          }
-        } else {
-          if (height > MAX_SIZE) {
-            width *= MAX_SIZE / height
-            height = MAX_SIZE
-          }
-        }
-
-        canvas.width = width
-        canvas.height = height
-        const ctx = canvas.getContext('2d')
-        ctx.drawImage(img, 0, 0, width, height)
-        const dataUrl = canvas.toDataURL('image/webp', 0.8)
-        
-        updateProfile(user.id, { avatar_url: dataUrl })
-          .then(() => refetchProfile())
-          .catch(err => console.error("Failed to update avatar", err))
-          .finally(() => setIsUploading(false))
-      }
-      img.src = event.target.result
-    }
-    reader.readAsDataURL(file)
+  const openNewItem = (type) => {
+    setTaskType(type)
+    setDialogOpen(true)
   }
 
-  const totalTasks = (todoTasks?.length || 0) + (finishedTasks?.length || 0) + (doneTasks?.length || 0)
-  const finishedTotal = (finishedTasks?.length || 0) + (doneTasks?.length || 0)
+  const handleTabChange = (tab) => {
+    if (tab === 'settings') setProfileOpen(true)
+    else setActiveTab(tab)
+  }
+
+  const totalTasks = todoTasks.length + finishedTasks.length + doneTasks.length
+  const finishedTotal = finishedTasks.length + doneTasks.length
   const completionRate = totalTasks > 0 ? Math.round((finishedTotal / totalTasks) * 100) : 0
 
-  // Real data for Insights
   const stats = useMemo(() => {
-    const allTasks = [...(todoTasks || []), ...(finishedTasks || []), ...(doneTasks || [])]
-    const high = allTasks.filter(t => t.priority === 'High').length
-    const medium = allTasks.filter(t => t.priority === 'Medium').length
-    const low = allTasks.filter(t => t.priority === 'Low').length
-    
+    const allTasks = [...todoTasks, ...finishedTasks, ...doneTasks]
     return {
-      high, medium, low,
-      todo: todoTasks?.length || 0,
-      finished: finishedTasks?.length || 0,
-      done: doneTasks?.length || 0,
-      total: totalTasks
+      high: allTasks.filter(t => t.priority === 'High').length,
+      medium: allTasks.filter(t => t.priority === 'Medium').length,
+      low: allTasks.filter(t => t.priority === 'Low').length,
+      todo: todoTasks.length,
+      finished: finishedTasks.length,
+      done: doneTasks.length,
+      total: allTasks.length,
     }
-  }, [todoTasks, finishedTasks, doneTasks, totalTasks])
+  }, [todoTasks, finishedTasks, doneTasks])
 
   const initials = useMemo(() => {
     if (profile?.full_name) {
@@ -198,11 +197,11 @@ export function DashboardPage() {
     return user?.email?.charAt(0).toUpperCase() || '?'
   }, [profile, user])
 
-  const applyFilters = useCallback((tasks) => {
-    if (!tasks) return []
-    // Filter by task_type first (Workspace only shows 'task')
-    let result = tasks.filter(t => t.task_type === 'task' || !t.task_type)
-    
+  const applyFilters = useCallback((list) => {
+    if (!list) return []
+    // Workspace only shows 'task' items; schedules live in the Jadwal tab
+    let result = list.filter(t => t.task_type === 'task' || !t.task_type)
+
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase()
       result = result.filter(t => (t.title || '').toLowerCase().includes(q) || (t.notes || '').toLowerCase().includes(q))
@@ -225,220 +224,212 @@ export function DashboardPage() {
 
   if (loading || profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-app flex items-center justify-center">
+        <div className="surface rounded-[22px] p-4">
+          <Loader2 className="h-7 w-7 animate-spin text-primary" />
+        </div>
       </div>
     )
   }
 
+  const taskDetailModal = (
+    <TaskDetailModal task={selectedTask} open={!!selectedTask} onClose={handleCloseDetail} onUpdate={updateTask} onDelete={deleteTask} />
+  )
+
   if (isTVMode) {
     return (
-      <div className={cn("min-h-screen flex bg-background transition-all duration-500 relative overflow-hidden")}>
-        <div className="noise z-0" />
-        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-          <Spotlight className="-top-40 left-0" fill="hsl(var(--primary))" />
-          <BackgroundBeams />
-        </div>
-        
-        <div className="flex-1 flex flex-col h-screen overflow-hidden relative z-10 p-8">
-          <div className="flex justify-between items-center mb-8 shrink-0">
+      <div className="h-app flex relative overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-y-auto relative z-10 p-4 pt-[calc(1rem+env(safe-area-inset-top))] md:p-8">
+          <div className="flex justify-between items-center gap-4 mb-6 shrink-0">
             <div>
-              <h1 className="text-3xl font-black text-foreground tracking-tight flex items-center gap-3">
-                <Monitor className="w-8 h-8 text-primary" />
+              <p className="eyebrow flex items-center gap-2 mb-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> Live focus mode
+              </p>
+              <h1 className="text-2xl md:text-4xl font-semibold text-foreground tracking-[-0.03em] flex items-center gap-3">
+                <Monitor className="w-7 h-7 text-primary" />
                 Tugasku Board
               </h1>
-              <p className="text-muted-foreground mt-1 text-[10px] font-black uppercase tracking-[0.2em]">Live Focus Mode</p>
             </div>
-            <Button 
-              onClick={toggleTVMode}
-              className="h-10 px-4 rounded-xl border border-white/10 hover:bg-white/5 bg-transparent text-foreground shadow-sm transition-all"
-            >
-              <X className="w-4 h-4 mr-2" /> Keluar Fullscreen
+            <Button variant="outline" onClick={toggleTVMode} className="h-10 px-4">
+              <X className="w-4 h-4 mr-2" /> Keluar
             </Button>
           </div>
 
-          <div className="relative flex-1 w-full min-h-0">
-             <KanbanBoard
-                todoTasks={filteredTodo}
-                finishedTasks={filteredFinished}
-                doneTasks={filteredDone}
-                onUpdateTask={updateTask}
-                onDeleteTask={deleteTask}
-                onOpenDetail={handleOpenDetail}
-              />
-          </div>
+          <KanbanBoard
+            todoTasks={filteredTodo}
+            finishedTasks={filteredFinished}
+            doneTasks={filteredDone}
+            onUpdateTask={updateTask}
+            onDeleteTask={deleteTask}
+            onOpenDetail={handleOpenDetail}
+          />
         </div>
-        <TaskDetailModal task={selectedTask} open={!!selectedTask} onClose={handleCloseDetail} onUpdate={updateTask} onDelete={deleteTask} />
+        {taskDetailModal}
       </div>
     )
   }
 
   return (
-    <div className={cn("min-h-screen flex bg-background transition-all duration-500 relative overflow-hidden")}>
-      <div className="noise z-0" />
-      
-      {/* Sidebar */}
-      <Sidebar 
-        activeTab={activeTab} 
-        onTabChange={(tab) => {
-          if (tab === 'settings') setProfileOpen(true)
-          else setActiveTab(tab)
-        }}
+    <div className="h-app flex relative overflow-hidden">
+      <Sidebar
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
         isPro={isPro}
         isAdmin={profile?.is_admin}
         user={user}
+        profile={profile}
         onOpenProfile={() => setProfileOpen(true)}
         onOpenDeveloper={() => setDeveloperOpen(true)}
+        onOpenAssistant={() => setAssistantOpen(true)}
+        onUpgrade={() => setUpgradeOpen(true)}
         onSignOut={signOut}
       />
 
-      <div className="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
+      <div className="flex-1 min-w-0 flex flex-col relative z-10">
         {/* Top Bar */}
-        <header className="h-20 flex items-center justify-between px-8 bg-background/30 backdrop-blur-xl border-b border-white/10 shrink-0 sticky top-0 z-40">
-          <div className="flex items-center gap-4">
-             <h1 className="text-xl font-black text-foreground tracking-tight">
-               {activeTab === 'dashboard' ? 'Workspace' : activeTab === 'schedule' ? 'Daily Schedule' : 'Analytics'}
-             </h1>
-             <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary uppercase tracking-widest">
-               <Sparkles className="w-3 h-3" />
-               Live Sync Active
-             </div>
-          </div>
+        {/* Top Bar: glass on phones, open over the sky on larger screens */}
+        <header className="shrink-0 z-30 pt-safe max-md:glass-nav">
+          <div className="h-14 md:h-20 flex items-center justify-between gap-3 px-4 md:px-8">
+            <div className="flex items-center gap-3 min-w-0">
+              <BrandMark className="md:hidden w-9 h-9 shrink-0" />
+              <h1 className="text-lg md:text-2xl font-semibold text-foreground tracking-[-0.02em] truncate">{TAB_TITLE[activeTab]}</h1>
+              <span className="hidden xl:flex eyebrow items-center gap-2 ml-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Live sync
+              </span>
+            </div>
 
-          <div className="flex items-center gap-4">
-             {activeTab === 'dashboard' && (
-               <button 
-                 onClick={toggleTVMode}
-                 className="hidden md:flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-primary/10 hover:bg-primary/20 text-primary font-bold transition-all border border-primary/20"
-                 title="Focus Mode (Fullscreen)"
-               >
-                 <Monitor className="h-4 w-4" /> 
-                 <span className="text-xs uppercase tracking-widest">Focus Mode</span>
-               </button>
-             )}
-             <div className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/5 border border-white/5">
+            <div className="flex items-center gap-2 md:gap-2.5">
+              {activeTab === 'dashboard' && (
+                <button
+                  onClick={toggleTVMode}
+                  className="hidden lg:flex glass-chrome items-center gap-2 px-4 h-10 rounded-full text-sm font-medium text-foreground hover:brightness-105 active:scale-[0.97] transition"
+                  title="Focus Mode (Fullscreen)"
+                >
+                  <Monitor className="h-4 w-4" />
+                  Focus Mode
+                </button>
+              )}
+              <label className="hidden lg:flex glass-chrome items-center gap-2 px-4 h-10 rounded-full focus-within:ring-2 focus-within:ring-primary/30">
                 <Search className="w-4 h-4 text-muted-foreground" />
-                <input 
-                  type="text" 
-                  placeholder="Quick search..." 
-                  className="bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted-foreground w-40"
+                <input
+                  type="search"
+                  value={searchQuery}
+                  placeholder="Cari tugas..."
+                  className="bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground w-44"
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-             </div>
-             <NotificationPanel 
-                notifications={notifications} 
-                onOpenDetail={handleOpenDetail} 
-             />
+              </label>
+              <NotificationPanel notifications={notifications} onOpenDetail={handleOpenDetail} />
+              <button
+                onClick={() => setProfileOpen(true)}
+                className="md:hidden w-10 h-10 rounded-full bg-primary/15 border border-primary/25 text-primary text-xs font-bold flex items-center justify-center"
+                aria-label="Profil"
+              >
+                {initials}
+              </button>
+            </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-8 relative">
-           {/* Interactive Background Elements */}
-           <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-              <Spotlight className="-top-40 left-0" fill="hsl(var(--primary))" />
-              <BackgroundBeams />
-           </div>
+        <main className="flex-1 overflow-y-auto overscroll-contain relative pb-nav md:pb-10">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 pt-5 md:px-8 md:pt-4 space-y-6 md:space-y-8">
+            {/* Welcome (phones only show it on the Workspace tab to save space) */}
+            <div className={cn('flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6', activeTab === 'dashboard' ? 'flex' : 'hidden md:flex')}>
+              <div className="min-w-0">
+                <p className="eyebrow flex items-center gap-2 mb-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}
+                  {todoTasks.length > 0 && <span className="hidden sm:inline">· {todoTasks.length} tugas aktif</span>}
+                </p>
+                <h2 className="text-[34px] leading-[1.05] md:text-6xl font-semibold text-foreground tracking-[-0.04em]">
+                  Halo, <span className="text-leaf">{firstName}.</span>
+                </h2>
 
-           <div className="relative z-10 max-w-7xl mx-auto space-y-10">
-             {/* Welcome Header */}
-             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="mt-2 md:mt-3 group/quote relative max-w-xl">
+                  {isEditingQuote ? (
+                    <div className="flex items-center gap-2 animate-fade-in">
+                      <input
+                        type="text"
+                        value={tempQuote}
+                        onChange={(e) => setTempQuote(e.target.value)}
+                        className="bg-card/80 border-b-2 border-primary outline-none font-serif italic text-lg py-1.5 px-2 text-foreground w-full min-w-0 sm:min-w-[340px] rounded-t-md"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveQuote()
+                          if (e.key === 'Escape') setIsEditingQuote(false)
+                        }}
+                      />
+                      <button onClick={handleSaveQuote} className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors" aria-label="Simpan kutipan">
+                        <Check className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => { setTempQuote(userQuote); setIsEditingQuote(true) }}
+                      className="text-left font-serif italic text-lg md:text-xl text-foreground/70 hover:text-foreground transition-colors inline-flex items-center gap-2"
+                    >
+                      “{userQuote}”
+                      <Edit2 className="h-3 w-3 shrink-0 opacity-60 [@media(hover:hover)]:opacity-0 group-hover/quote:opacity-100 transition-opacity" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="hidden sm:flex items-center gap-3 surface rounded-full pl-4 pr-2 py-2">
+                <div className="text-right">
+                  <p className="eyebrow">Progres</p>
+                  <p className="text-sm font-semibold text-foreground">{completionRate}% selesai</p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center text-primary font-bold text-xs">
+                  {initials}
+                </div>
+              </div>
+            </div>
+
+            {activeTab === 'dashboard' ? (
+              <>
                 <div>
-                  <div className="flex items-center gap-3 mb-2">
-                     <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] bg-primary/10 px-3 py-1 rounded-full border border-primary/20">Active Session</span>
-                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
-                  </div>
-                  <h2 className="text-3xl md:text-4xl font-black text-foreground tracking-tight">
-                    Welcome back, <span className="text-primary">{profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0]}</span>.
-                  </h2>
-                  
-                  {/* Editable Quote */}
-                  <div className="mt-4 group/quote relative inline-block max-w-xl">
-                    {isEditingQuote ? (
-                      <div className="flex items-center gap-2 animate-fade-in">
-                        <input 
-                          type="text" 
-                          value={tempQuote}
-                          onChange={(e) => setTempQuote(e.target.value)}
-                          className="bg-white/5 border-b-2 border-primary outline-none text-sm font-bold py-1 px-2 text-foreground w-full min-w-[300px]"
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleSaveQuote()
-                            if (e.key === 'Escape') setIsEditingQuote(false)
-                          }}
-                        />
-                        <button onClick={handleSaveQuote} className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors"><Check className="h-4 w-4" /></button>
-                      </div>
-                    ) : (
-                      <p 
-                        onClick={() => { setTempQuote(userQuote); setIsEditingQuote(true); }}
-                        className="text-sm font-bold text-muted-foreground italic cursor-pointer hover:text-foreground transition-colors flex items-center gap-2"
-                      >
-                        "{userQuote}"
-                        <Edit2 className="h-3 w-3 opacity-0 group-hover/quote:opacity-100 transition-opacity" />
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                   <div className="text-right hidden sm:block">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Workspace Health</p>
-                      <p className="text-sm font-black text-foreground">{completionRate}% Completed</p>
-                   </div>
-                   <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center">
-                      <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-black text-xs">
-                        {initials}
-                      </div>
-                   </div>
-                </div>
-             </div>
-
-             {activeTab === 'dashboard' ? (
-               <>
-                {/* HIDEABLE STATS BAR */}
-                <div className="space-y-2">
-                  <button 
+                  <button
                     onClick={() => setShowStats(!showStats)}
-                    className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] hover:text-primary transition-colors mb-2 px-2"
+                    className="eyebrow flex items-center gap-1.5 hover:text-foreground transition-colors mb-3"
                   >
-                    {showStats ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                    {showStats ? 'Hide Overview' : 'Show Overview'}
+                    {showStats ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                    {showStats ? 'Sembunyikan ringkasan' : 'Tampilkan ringkasan'}
                   </button>
-                  
-                  <AnimatePresence>
+
+                  <AnimatePresence initial={false}>
                     {showStats && (
-                      <motion.div 
+                      <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         className="overflow-hidden"
                       >
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-2">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                           {[
-                            { label: 'Total Tasks', value: totalTasks, color: 'text-primary' },
-                            { label: 'To Do', value: todoTasks.length, color: 'text-violet-500' },
-                            { label: 'Pending', value: finishedTasks.length, color: 'text-amber-500' },
-                            { label: 'Completed', value: doneTasks.length, color: 'text-emerald-500' },
+                            { label: 'Total Tugas', value: totalTasks, color: 'text-foreground' },
+                            { label: 'Dikerjakan', value: todoTasks.length, color: 'text-primary' },
+                            { label: 'Belum Submit', value: finishedTasks.length, color: 'text-warning' },
+                            { label: 'Selesai', value: doneTasks.length, color: 'text-success' },
                           ].map((s) => (
-                            <div key={s.label} className="bg-card/40 backdrop-blur-xl border border-white/10 dark:border-white/5 p-4 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] hover:border-primary/30 transition-all duration-300">
-                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{s.label}</p>
-                              <p className={cn("text-2xl font-black drop-shadow-sm", s.color)}>{s.value}</p>
+                            <div key={s.label} className="surface p-4 md:p-5 rounded-[22px]">
+                              <p className="eyebrow mb-2">{s.label}</p>
+                              <p className={cn('text-3xl md:text-4xl font-semibold tracking-[-0.03em] tabular-nums', s.color)}>{s.value}</p>
                             </div>
                           ))}
                         </div>
-                        
-                        {/* Progress Bar */}
-                        <div className="px-2 mt-4 max-w-4xl">
-                          <div className="h-2 w-full bg-muted/20 rounded-full overflow-hidden">
-                            <motion.div 
+
+                        <div className="surface rounded-[22px] mt-3 md:mt-4 px-4 py-3.5">
+                          <div className="flex justify-between mb-2.5">
+                            <span className="eyebrow">Progres keseluruhan</span>
+                            <span className="text-sm font-semibold text-foreground tabular-nums">{completionRate}%</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-hairline/10 rounded-full overflow-hidden">
+                            <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: `${completionRate}%` }}
-                              className="h-full bg-primary"
+                              className="h-full bg-primary rounded-full"
                             />
-                          </div>
-                          <div className="flex justify-between mt-2 px-1">
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Global Progress</span>
-                            <span className="text-[10px] font-bold text-primary">{completionRate}%</span>
                           </div>
                         </div>
                       </motion.div>
@@ -446,159 +437,162 @@ export function DashboardPage() {
                   </AnimatePresence>
                 </div>
 
-                {/* SEARCH & FILTERS BAR */}
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col md:flex-row items-center gap-4 bg-card/30 backdrop-blur-2xl p-2 rounded-[28px] border border-white/10 dark:border-white/5 shadow-lg shadow-black/5">
-                    <div className="flex-1 w-full">
+                {/* Search & filters */}
+                <div className="surface relative z-20 rounded-[22px] p-3 md:p-3.5 space-y-3">
+                  <label className="lg:hidden lg-rim flex items-center gap-2 h-11 px-4 rounded-full bg-card/70 focus-within:ring-2 focus-within:ring-primary/30">
+                    <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <input
+                      type="search"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Cari tugas atau catatan..."
+                      className="flex-1 min-w-0 bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground"
+                    />
+                  </label>
+                  <div className="flex flex-col md:flex-row md:items-center gap-3">
+                    <div className="flex-1 min-w-0">
                       <SearchFilter onSearch={setSearchQuery} onFilter={setFilterPriorities} onSort={setSortKey} />
                     </div>
-                  </div>
-
-                  {/* NEW TASK BUTTON BELOW SEARCH */}
-                  <div className="px-2">
-                    <Button 
-                      onClick={() => { setTaskType('task'); setDialogOpen(true); }}
-                      className="w-full md:w-auto h-12 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black shadow-lg shadow-primary/20 transition-all flex items-center gap-2 group"
+                    <Button
+                      onClick={() => openNewItem('task')}
+                      className="hidden md:flex h-11 px-5 rounded-full font-semibold items-center gap-2 group"
                     >
-                      <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform" /> 
-                      <span className="uppercase tracking-widest text-xs">Buat Task Baru</span>
+                      <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform" />
+                      Tugas Baru
                     </Button>
                   </div>
                 </div>
 
-                {/* THE BOARD */}
-                <div className="relative w-full min-h-[900px]">
-                   <KanbanBoard
-                      todoTasks={filteredTodo}
-                      finishedTasks={filteredFinished}
-                      doneTasks={filteredDone}
-                      onUpdateTask={updateTask}
-                      onDeleteTask={deleteTask}
-                      onOpenDetail={handleOpenDetail}
-                    />
-                </div>
-               </>
-             ) : activeTab === 'schedule' ? (
-                <ScheduleView 
-                  tasks={tasks.filter(t => t.task_type === 'schedule')} 
-                  onAddTask={() => { setTaskType('schedule'); setDialogOpen(true); }}
-                  onEditTask={handleOpenDetail}
+                <KanbanBoard
+                  todoTasks={filteredTodo}
+                  finishedTasks={filteredFinished}
+                  doneTasks={filteredDone}
+                  onUpdateTask={updateTask}
+                  onDeleteTask={deleteTask}
+                  onOpenDetail={handleOpenDetail}
                 />
-             ) : (
-               /* Analytics Tab Content */
-               <div className="space-y-10 animate-fade-in">
-                  {/* Top Level Real Stats */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                     {[
-                       { label: 'Total Tasks', value: stats.total, icon: LayoutDashboard, color: 'text-primary' },
-                       { label: 'In Progress', value: stats.todo, icon: Clock, color: 'text-amber-400' },
-                       { label: 'Completed', value: stats.finished + stats.done, icon: CheckCircle2, color: 'text-emerald-400' },
-                       { label: 'Avg. Completion', value: `${completionRate}%`, icon: TrendingUp, color: 'text-violet-400' },
-                     ].map((s) => (
-                       <div key={s.label} className="p-5 rounded-3xl bg-card/40 backdrop-blur-3xl border border-white/10 shadow-xl group hover:border-primary/30 transition-all">
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className={cn("p-2 rounded-xl bg-white/5", s.color)}>
-                              <s.icon className="w-4 h-4" />
-                            </div>
-                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{s.label}</span>
-                          </div>
-                          <p className="text-2xl font-black text-foreground">{s.value}</p>
-                       </div>
-                     ))}
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Priority Breakdown (Real Data) */}
-                    <div className="lg:col-span-1 p-8 rounded-[40px] bg-card/40 backdrop-blur-3xl border border-white/10 shadow-2xl space-y-6">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                          <AlertTriangle className="w-4 h-4" /> Priority Breakdown
-                        </h3>
-                        <div className="space-y-6 pt-4">
-                           {[
-                             { label: 'High Priority', count: stats.high, color: 'bg-red-500', pct: stats.total > 0 ? (stats.high / stats.total) * 100 : 0 },
-                             { label: 'Medium Priority', count: stats.medium, color: 'bg-amber-400', pct: stats.total > 0 ? (stats.medium / stats.total) * 100 : 0 },
-                             { label: 'Low Priority', count: stats.low, color: 'bg-blue-400', pct: stats.total > 0 ? (stats.low / stats.total) * 100 : 0 },
-                           ].map((p) => (
-                             <div key={p.label} className="space-y-2">
-                               <div className="flex justify-between text-[11px] font-bold">
-                                 <span className="text-foreground/70">{p.label}</span>
-                                 <span className="text-foreground">{p.count} tasks</span>
-                               </div>
-                               <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                                 <motion.div 
-                                   initial={{ width: 0 }}
-                                   animate={{ width: `${p.pct}%` }}
-                                   className={cn("h-full rounded-full", p.color)}
-                                 />
-                               </div>
-                             </div>
-                           ))}
-                        </div>
+              </>
+            ) : activeTab === 'schedule' ? (
+              <ScheduleView
+                tasks={tasks.filter(t => t.task_type === 'schedule')}
+                onAddTask={() => openNewItem('schedule')}
+                onEditTask={handleOpenDetail}
+              />
+            ) : (
+              <div className="space-y-6 md:space-y-8 animate-fade-in">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                  {[
+                    { label: 'Total Tugas', value: stats.total, icon: LayoutDashboard, color: 'text-primary' },
+                    { label: 'Dikerjakan', value: stats.todo, icon: Clock, color: 'text-warning' },
+                    { label: 'Sudah Selesai', value: stats.finished + stats.done, icon: CheckCircle2, color: 'text-success' },
+                    { label: 'Tingkat Selesai', value: `${completionRate}%`, icon: TrendingUp, color: 'text-leaf' },
+                  ].map((s) => (
+                    <div key={s.label} className="surface p-4 md:p-5 rounded-[22px]">
+                      <div className="flex items-center gap-2 mb-3">
+                        <s.icon className={cn('w-4 h-4', s.color)} />
+                        <span className="eyebrow truncate">{s.label}</span>
+                      </div>
+                      <p className="text-3xl font-semibold tracking-[-0.03em] text-foreground tabular-nums">{s.value}</p>
                     </div>
+                  ))}
+                </div>
 
-                    {/* Productivity Trend (Enhanced Mockup) */}
-                    <div className="lg:col-span-2 p-8 rounded-[40px] bg-card/40 backdrop-blur-3xl border border-white/10 shadow-2xl space-y-8">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                            <TrendingUp className="w-4 h-4" /> Weekly Performance
-                          </h3>
-                          <div className="flex gap-2">
-                            <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400">
-                              <div className="w-2 h-2 rounded-full bg-emerald-400" /> Tasks Done
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                  <div className="surface lg:col-span-1 p-5 md:p-6 rounded-[26px] space-y-5">
+                    <h3 className="eyebrow flex items-center gap-2">
+                      <AlertTriangle className="w-3.5 h-3.5" /> Sebaran prioritas
+                    </h3>
+                    <div className="space-y-5">
+                      {[
+                        { label: 'High', count: stats.high, color: 'bg-red-500' },
+                        { label: 'Medium', count: stats.medium, color: 'bg-amber-400' },
+                        { label: 'Low', count: stats.low, color: 'bg-blue-400' },
+                      ].map((p) => (
+                        <div key={p.label} className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="flex items-center gap-2 font-medium text-foreground">
+                              <span className={cn('w-2 h-2 rounded-full', p.color)} />
+                              {p.label}
                             </span>
-                            <span className="flex items-center gap-1.5 text-[10px] font-bold text-white/20">
-                              <div className="w-2 h-2 rounded-full bg-white/20" /> Planned
-                            </span>
+                            <span className="font-bold text-foreground tabular-nums">{p.count}</span>
+                          </div>
+                          <div className="h-2 w-full bg-hairline/10 rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${stats.total > 0 ? (p.count / stats.total) * 100 : 0}%` }}
+                              className={cn('h-full rounded-full', p.color)}
+                            />
                           </div>
                         </div>
-                        <div className="flex items-end justify-between h-48 gap-4 px-2">
-                           {[45, 30, 85, 60, 95, 40, 75].map((h, i) => (
-                             <div key={i} className="flex-1 group relative">
-                               <div className="absolute inset-0 flex items-end justify-center">
-                                  <div className="w-full h-full bg-white/5 rounded-t-2xl group-hover:bg-white/10 transition-colors" />
-                               </div>
-                               <motion.div 
-                                 initial={{ height: 0 }}
-                                 animate={{ height: `${h}%` }}
-                                 className="relative w-full rounded-t-2xl bg-gradient-to-t from-primary/80 to-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]"
-                               >
-                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-primary text-white text-[9px] font-black px-2 py-1 rounded-md">
-                                    {Math.round(h / 10)}
-                                  </div>
-                               </motion.div>
-                               <div className="mt-4 text-center text-[10px] font-black text-muted-foreground uppercase opacity-40">
-                                 {['Sen','Sel','Rab','Kam','Jum','Sab','Min'][i]}
-                               </div>
-                             </div>
-                           ))}
-                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Pro Insight CTA */}
-                  <div className="p-10 rounded-[48px] bg-gradient-to-br from-primary/10 via-violet-500/5 to-transparent border border-primary/20 relative overflow-hidden group">
-                     <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-                        <Crown className="w-32 h-32 text-primary" />
-                     </div>
-                     <div className="relative z-10 max-w-2xl">
-                        <span className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-4">Pro Feature Insight</span>
-                        <h2 className="text-3xl font-black text-foreground tracking-tighter mb-4 leading-none">Unlock Deep Workflow Analytics</h2>
-                        <p className="text-muted-foreground text-sm leading-relaxed mb-8">
-                           Dapatkan laporan mendalam tentang efisiensi kerja Anda, waktu rata-rata penyelesaian tugas, dan identifikasi "bottle-neck" dalam produktivitas mingguan Anda.
-                        </p>
-                        {!isPro && (
-                          <Button className="h-12 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black shadow-xl shadow-primary/30 uppercase tracking-widest text-xs">
-                             Aktifkan Analytics Pro
-                          </Button>
-                        )}
-                     </div>
+                  <div className="surface lg:col-span-2 p-5 md:p-6 rounded-[26px] space-y-5">
+                    <h3 className="eyebrow flex items-center gap-2">
+                      <CalendarRange className="w-3.5 h-3.5" /> Beban 7 hari ke depan
+                    </h3>
+                    <WorkloadChart tasks={tasks} onOpenTask={handleOpenDetail} />
                   </div>
-               </div>
-             )}
-           </div>
-      </main>
+                </div>
 
-      <TaskDetailModal task={selectedTask} open={!!selectedTask} onClose={handleCloseDetail} onUpdate={updateTask} onDelete={deleteTask} />
+                {!isPro && (
+                  <div className="surface p-6 md:p-10 rounded-[26px] relative overflow-hidden">
+                    <Crown className="absolute top-6 right-6 w-24 h-24 text-primary opacity-[0.08]" />
+                    <div className="relative z-10 max-w-2xl">
+                      <p className="eyebrow flex items-center gap-2 mb-3">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Tugasku Pro
+                      </p>
+                      <h2 className="text-2xl md:text-4xl font-semibold text-foreground tracking-[-0.03em] mb-3 leading-tight">
+                        Tugas tanpa batas, <span className="text-leaf">insight lebih dalam.</span>
+                      </h2>
+                      <p className="text-muted-foreground text-sm md:text-base leading-relaxed mb-6">
+                        Tambah tugas sebanyak yang kamu butuhkan dan pantau pola produktivitas mingguanmu.
+                      </p>
+                      <Button onClick={() => setUpgradeOpen(true)} className="h-12 px-7 rounded-full font-semibold">
+                        Upgrade ke Pro
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+
+      <MobileNav
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        onNewTask={() => openNewItem(activeTab === 'schedule' ? 'schedule' : 'task')}
+        onOpenAssistant={() => setAssistantOpen(true)}
+        onOpenProfile={() => setProfileOpen(true)}
+        onOpenNotes={() => setNotesOpen(true)}
+        onOpenTimer={() => setTimerOpen(true)}
+        onOpenDeveloper={() => setDeveloperOpen(true)}
+        onUpgrade={() => setUpgradeOpen(true)}
+        onSignOut={signOut}
+        isPro={isPro}
+        isAdmin={profile?.is_admin}
+      />
+
+      <ToolDock
+        hidden={assistantOpen}
+        onOpenAssistant={() => setAssistantOpen(true)}
+        onOpenTimer={() => setTimerOpen((o) => !o)}
+        onOpenNotes={() => setNotesOpen(true)}
+        timerRunning={timerRunning}
+      />
+
+      <AssistantPanel
+        open={assistantOpen}
+        onOpenChange={setAssistantOpen}
+        assistant={assistant}
+        onOpenTask={handleOpenTaskById}
+        userName={firstName}
+      />
+
+      {taskDetailModal}
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} user={user} />
       <DeveloperModal open={developerOpen} onClose={() => setDeveloperOpen(false)} />
       <ProfileModal
@@ -613,15 +607,15 @@ export function DashboardPage() {
         onSignOut={signOut}
         onUpgrade={() => { setProfileOpen(false); setUpgradeOpen(true) }}
       />
-      
+
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md bg-card/90 backdrop-blur-2xl border-primary/20 rounded-[40px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black text-center pt-4 uppercase">
+            <DialogTitle className="text-xl font-semibold tracking-[-0.02em] text-center pt-2">
               {taskType === 'schedule' ? 'Tambah Jadwal' : 'Tambah Tugas'}
             </DialogTitle>
           </DialogHeader>
-          <div className="p-2">
+          <div className="px-1">
             {taskType === 'schedule' ? (
               <ScheduleForm
                 onAdd={addTask}
@@ -642,9 +636,9 @@ export function DashboardPage() {
           </div>
         </DialogContent>
       </Dialog>
-      <FloatingNotepad />
-      <FloatingPomodoro />
-      </div>
+
+      <FloatingNotepad open={notesOpen} onOpenChange={setNotesOpen} />
+      <FloatingPomodoro open={timerOpen} onOpenChange={setTimerOpen} onRunningChange={setTimerRunning} />
     </div>
   )
 }

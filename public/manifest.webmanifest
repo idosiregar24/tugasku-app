@@ -1,0 +1,39 @@
+{
+  "id": "/",
+  "name": "Tugasku – Manajemen Tugas Produktif",
+  "short_name": "Tugasku",
+  "description": "Kelola tugas, jadwal, dan fokus harianmu dengan Kanban board dan asisten AI.",
+  "lang": "id",
+  "start_url": "/dashboard?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f6f9fc",
+  "theme_color": "#f6f9fc",
+  "categories": ["productivity", "education"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tambah Tugas",
+      "short_name": "Tugas Baru",
+      "url": "/dashboard?action=new-task",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Tanya Asisten AI",
+      "short_name": "Asisten AI",
+      "url": "/dashboard?action=assistant",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Jadwal Hari Ini",
+      "short_name": "Jadwal",
+      "url": "/dashboard?tab=schedule",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

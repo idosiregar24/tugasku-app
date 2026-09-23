@@ -4,7 +4,7 @@
 export const priorityConfig = {
   High: {
     border: 'border-l-red-500',
-    badge: 'bg-red-500/15 text-red-400 border-red-500/30',
+    badge: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/25',
     dot: 'bg-red-500',
     glow: 'shadow-red-500/10',
     label: 'High – Sangat mendesak',
@@ -12,7 +12,7 @@ export const priorityConfig = {
   },
   Medium: {
     border: 'border-l-amber-400',
-    badge: 'bg-amber-400/15 text-amber-400 border-amber-400/30',
+    badge: 'bg-amber-400/15 text-amber-700 dark:text-amber-400 border-amber-500/30',
     dot: 'bg-amber-400',
     glow: 'shadow-amber-400/10',
     label: 'Medium – Perlu diperhatikan',
@@ -20,7 +20,7 @@ export const priorityConfig = {
   },
   Low: {
     border: 'border-l-blue-400',
-    badge: 'bg-blue-400/15 text-blue-400 border-blue-400/30',
+    badge: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25',
     dot: 'bg-blue-400',
     glow: 'shadow-blue-400/10',
     label: 'Low – Tidak mendesak',
