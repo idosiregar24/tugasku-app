@@ -24,7 +24,7 @@ To change the photos: put new source images in a scratch dir and run
 node .claude/skills/tugasku-design/make-scene-photos.mjs public/backgrounds
 ```
 
-(edit the `JOBS` table for the source paths, crop focus and quality; keep each output under ~300 KB). If the scene file names change, update `index.html`'s preload links and `SHELL_URLS` in `public/sw.js`. `generate-scene.mjs` in this folder still produces the older illustrated SVG version if a flat-vector look is ever wanted back.
+(edit the `JOBS` table for source paths, crop focus, quality and pre-blur; aim for ~400–600 KB each). Run it with `--inspect <dir>` and look at the 1:1 sky crops before shipping: **dark night skies are the hard case** — under ~q0.78 they band and look low-res, and their sensor grain inflates the file, so night shots get a higher quality plus a 0.3px pre-blur while daylight shots get neither. Resolution matters too: a 3× phone needs ~1240px of width in the tall crop, or the photo looks soft. If the scene file names change, update `index.html`'s preload links and `SHELL_URLS` in `public/sw.js`. `generate-scene.mjs` in this folder still produces the older illustrated SVG version if a flat-vector look is ever wanted back.
 
 **Text directly on the photo needs help.** Large headings are fine; anything smaller sits on glass, in a `glass-chrome` chip, or over a local scrim (see the hero wash in `LandingPage.jsx`).
 

@@ -55,10 +55,11 @@
     --lg-inner: 0.1;
     --lg-outline: 0;
     --scene: url('/backgrounds/scene-night-wide.webp');
-    /* Wash over the photo so text stays readable; stronger where the photo is busiest */
-    --scrim-top: 0.4;
-    --scrim-mid: 0.24;
-    --scrim-bottom: 0.5;
+    /* Wash over the photo so text stays readable; the night shot is already dark,
+       so keep it light or the Milky Way turns to mud */
+    --scrim-top: 0.26;
+    --scrim-mid: 0.1;
+    --scrim-bottom: 0.38;
   }
 
   /* ── LIGHT (day) ── */
