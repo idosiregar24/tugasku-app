@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v4'
+const CACHE_VERSION = 'v5'
 const SHELL_CACHE = `tugasku-shell-${CACHE_VERSION}`
 const ASSET_CACHE = `tugasku-assets-${CACHE_VERSION}`
 const SHELL_URLS = [
