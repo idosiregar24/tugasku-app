@@ -287,10 +287,10 @@ export function DashboardPage() {
 
       <div className="flex-1 min-w-0 flex flex-col relative z-10">
         {/* Top Bar */}
-        {/* Top Bar: glass on phones, open over the sky on larger screens */}
-        <header className="shrink-0 z-30 pt-safe max-md:glass-nav">
+        {/* Top Bar: open and continuous over the background */}
+        <header className="shrink-0 z-30 pt-safe">
           <div className="h-14 md:h-20 flex items-center justify-between gap-3 px-4 md:px-8">
-            <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-center gap-2.5 min-w-0">
               <BrandMark className="md:hidden w-9 h-9 shrink-0" />
               <h1 className="text-lg md:text-2xl font-semibold text-foreground tracking-[-0.02em] truncate">{TAB_TITLE[activeTab]}</h1>
               <span className="hidden xl:flex eyebrow items-center gap-2 ml-1">
@@ -322,7 +322,7 @@ export function DashboardPage() {
               <NotificationPanel notifications={notifications} onOpenDetail={handleOpenDetail} />
               <button
                 onClick={() => setProfileOpen(true)}
-                className="md:hidden w-10 h-10 rounded-full bg-primary/15 border border-primary/25 text-primary text-xs font-bold flex items-center justify-center"
+                className="md:hidden glass-chrome w-10 h-10 rounded-full text-foreground hover:text-primary text-xs font-bold flex items-center justify-center transition active:scale-95"
                 aria-label="Profil"
               >
                 {initials}

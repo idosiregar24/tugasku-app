@@ -54,7 +54,7 @@
     --lg-rim-soft: 0.1;
     --lg-inner: 0.1;
     --lg-outline: 0;
-    --scene: url('/backgrounds/scene-night-wide.webp');
+    --scene: url('./assets/Bg-Gelap.png');
     /* Wash over the photo so text stays readable; the night shot is already dark,
        so keep it light or the Milky Way turns to mud */
     --scrim-top: 0.26;
@@ -102,7 +102,7 @@
     --lg-rim-soft: 0.28;
     --lg-inner: 0.55;
     --lg-outline: 0.07;
-    --scene: url('/backgrounds/scene-day-wide.webp');
+    --scene: url('./assets/Bg-Terang2.png');
     --scrim-top: 0.3;
     --scrim-mid: 0.12;
     --scrim-bottom: 0.4;
@@ -157,16 +157,6 @@
         hsl(var(--background) / var(--scrim-top)) 0%,
         hsl(var(--background) / var(--scrim-mid)) 38%,
         hsl(var(--background) / var(--scrim-bottom)) 100%);
-  }
-
-  @media (orientation: portrait) {
-    :root {
-      --scene: url('/backgrounds/scene-night-tall.webp');
-    }
-
-    .light {
-      --scene: url('/backgrounds/scene-day-tall.webp');
-    }
   }
 
   /* iOS Safari zooms the page when a focused field is under 16px */

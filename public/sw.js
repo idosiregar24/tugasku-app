@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v5'
+const CACHE_VERSION = 'v6'
 const SHELL_CACHE = `tugasku-shell-${CACHE_VERSION}`
 const ASSET_CACHE = `tugasku-assets-${CACHE_VERSION}`
 const SHELL_URLS = [
@@ -7,8 +7,6 @@ const SHELL_URLS = [
   '/favicon.svg',
   '/icons/icon-192.png',
   '/icons/apple-touch-icon.png',
-  '/backgrounds/scene-day-wide.webp',
-  '/backgrounds/scene-day-tall.webp',
 ]
 const MAX_ASSET_ENTRIES = 80
 
