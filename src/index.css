@@ -54,7 +54,11 @@
     --lg-rim-soft: 0.1;
     --lg-inner: 0.1;
     --lg-outline: 0;
-    --scene: url('/backgrounds/scene-night.svg');
+    --scene: url('/backgrounds/scene-night-wide.webp');
+    /* Wash over the photo so text stays readable; stronger where the photo is busiest */
+    --scrim-top: 0.4;
+    --scrim-mid: 0.24;
+    --scrim-bottom: 0.5;
   }
 
   /* ── LIGHT (day) ── */
@@ -97,7 +101,10 @@
     --lg-rim-soft: 0.28;
     --lg-inner: 0.55;
     --lg-outline: 0.07;
-    --scene: url('/backgrounds/scene-day.svg');
+    --scene: url('/backgrounds/scene-day-wide.webp');
+    --scrim-top: 0.3;
+    --scrim-mid: 0.12;
+    --scrim-bottom: 0.4;
   }
 
   * {
@@ -123,9 +130,11 @@
     overscroll-behavior-y: none;
   }
 
-  /* The landscape behind every page. A fixed element (not background-attachment:
-     fixed, which iOS ignores); lvh so it never shows a gap when Safari's bars move. */
-  body::before {
+  /* The landscape photo behind every page. A fixed element (not
+     background-attachment: fixed, which iOS ignores); lvh so it never shows a
+     gap when Safari's bars move. Portrait screens get a taller crop. */
+  body::before,
+  body::after {
     content: '';
     position: fixed;
     left: 0;
@@ -135,8 +144,28 @@
     height: 100lvh;
     z-index: -1;
     pointer-events: none;
-    background: var(--scene) center bottom / cover no-repeat, hsl(var(--background));
-    transition: opacity 0.4s ease;
+  }
+
+  body::before {
+    background: var(--scene) center center / cover no-repeat, hsl(var(--background));
+  }
+
+  /* Readability wash over the photo */
+  body::after {
+    background: linear-gradient(to bottom,
+        hsl(var(--background) / var(--scrim-top)) 0%,
+        hsl(var(--background) / var(--scrim-mid)) 38%,
+        hsl(var(--background) / var(--scrim-bottom)) 100%);
+  }
+
+  @media (orientation: portrait) {
+    :root {
+      --scene: url('/backgrounds/scene-night-tall.webp');
+    }
+
+    .light {
+      --scene: url('/backgrounds/scene-day-tall.webp');
+    }
   }
 
   /* iOS Safari zooms the page when a focused field is under 16px */

@@ -183,7 +183,12 @@ export function LandingPage() {
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Hero */}
-        <section className="pt-16 sm:pt-24 pb-14 text-center animate-fade-up">
+        <section className="relative isolate pt-16 sm:pt-24 pb-14 text-center animate-fade-up">
+          {/* Soft wash so the hero copy stays readable over the photo */}
+          <div
+            aria-hidden
+            className="absolute inset-x-[-20%] -top-8 bottom-4 -z-10 bg-[radial-gradient(70%_60%_at_50%_45%,hsl(var(--background)/0.82),hsl(var(--background)/0.45)_55%,transparent_78%)]"
+          />
           <p className="badge-section justify-center mb-6">
             <span className="w-2 h-2 rounded-full bg-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.2)]" />
             Baru · Asisten AI untuk tugasmu
@@ -192,7 +197,7 @@ export function LandingPage() {
             Aplikasi tugas yang<br />
             berpikir <span className="text-leaf">bersamamu.</span>
           </h1>
-          <p className="text-lg sm:text-xl text-foreground/75 max-w-2xl mx-auto mt-6 leading-relaxed">
+          <p className="text-lg sm:text-xl text-foreground/85 max-w-2xl mx-auto mt-6 leading-relaxed">
             Tugasku adalah ruang kerja tenang untuk tugas, jadwal, dan fokus harian — dengan asisten AI yang membantu saat kamu minta.
             Untuk pelajar, mahasiswa, dan siapa pun yang ingin kerja lebih ringan.
           </p>
